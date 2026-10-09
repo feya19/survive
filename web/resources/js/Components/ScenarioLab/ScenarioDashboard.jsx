@@ -288,6 +288,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                 title="Scenario lab"
                 activeKey="scenario-lab"
                 actions={
+                    <>
                     <div className="flex items-center space-x-2">
                         <div className="hidden lg:flex items-center space-x-2 text-xs text-emerald-200/80 font-medium mr-1">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -324,6 +325,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                             <span className="sm:hidden">New</span>
                         </button>
                     </div>
+                    </>
                 }
             />
 

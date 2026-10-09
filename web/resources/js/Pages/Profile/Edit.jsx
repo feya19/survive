@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import React from 'react';
+import { Head, usePage } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
@@ -8,8 +8,6 @@ import AppNavbar from '@/Components/AppNavbar';
 export default function Edit({ mustVerifyEmail, status }) {
     const { auth } = usePage().props;
     const user = auth.user;
-
-    const handleLogout = () => router.post('/logout');
 
     // 2 initials for the circular avatar (e.g. "MC" or "TU")
     const initials = (() => {
@@ -37,40 +35,10 @@ export default function Edit({ mustVerifyEmail, status }) {
         <div className="min-h-screen bg-[#f3f4ef] text-[#1c1f1d] flex flex-col font-sans antialiased selection:bg-[#c2e78c] selection:text-[#102414]">
             <Head title="Profile — Survive" />
 
-            <AppNavbar user={user} activeKey="profile" title="Profil Saya" />
+            <AppNavbar user={user} activeKey="profile" title="Profile" />
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto">
-
-                        <span className="h-4 w-px bg-[#d8dcd0] hidden sm:block"></span>
-
-                        <Link
-                            href="/dashboard"
-                            className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold text-gray-600 hover:text-[#112316] transition-colors"
-                        >
-                            <ArrowLeft className="w-3.5 h-3.5" />
-                            <span>Back to dashboard</span>
-                        </Link>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                        <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-600 font-medium">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span className="text-[11px] font-semibold text-emerald-800 bg-[#e7f6d9] px-2.5 py-0.5 rounded-full border border-[#cde8b4]">
-                                Active producer
-                            </span>
-                        </div>
-
-                        <button
-                            onClick={handleLogout}
-                            className="px-3 py-1.5 rounded-lg border border-[#d2d7cb] bg-white hover:bg-rose-50 text-xs font-semibold text-rose-600 flex items-center space-x-1.5 shadow-2xs transition-all"
-                        >
-                            <LogOut className="w-3.5 h-3.5" />
-                            <span>Sign out</span>
-                        </button>
-                    </div>
-                </header>
-
                 <div className="px-4 sm:px-8 py-8 max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         {/* Left Column: Profile Card */}
