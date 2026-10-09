@@ -1,6 +1,8 @@
 services:
   postgres:
     image: postgres:16-alpine
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_DB: survive
       POSTGRES_USER: survive
@@ -12,6 +14,7 @@ services:
       interval: 5s
       retries: 12
     restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     healthcheck:
@@ -19,17 +22,23 @@ services:
       interval: 5s
       retries: 12
     restart: unless-stopped
+
   migrate:
-    build: .
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     command: alembic upgrade head
-    env_file: .env
+    env_file: ./api/.env
     depends_on:
       postgres:
         condition: service_healthy
+
   fastapi-api:
-    build: .
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
-    env_file: .env
+    env_file: ./api/.env
     ports:
       - "8000:8000"
     volumes:
@@ -40,14 +49,23 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')",
+        ]
       interval: 10s
       retries: 12
     restart: unless-stopped
+
   celery-worker:
-    build: .
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     command: celery -A app.worker.celery_app worker --loglevel=info --pool=solo
-    env_file: .env
+    env_file: ./api/.env
     volumes:
       - artifact_data:/data
     depends_on:
@@ -56,12 +74,13 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+
   web:
     build:
-      context: ../web
+      context: ./web
       dockerfile: Dockerfile
     env_file:
-      - ../web/.env
+      - ./web/.env
     environment:
       APP_ENV: ${LARAVEL_APP_ENV:-production}
       APP_DEBUG: ${LARAVEL_APP_DEBUG:-false}
@@ -72,26 +91,37 @@ services:
       CACHE_STORE: database
       QUEUE_CONNECTION: database
       ML_API_URL: http://fastapi-api:8000
-      ML_API_SERVICE_TOKEN: ${SERVICE_TOKEN:?Set SERVICE_TOKEN in api/.env}
+      ML_API_SERVICE_TOKEN: ${SERVICE_TOKEN:-survive_studio_secret_token_2026_dev}
       ML_API_MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-200}
     ports:
       - "${LARAVEL_PORT:-8080}:80"
     volumes:
+      - ./web/app:/var/www/html/app
+      - ./web/resources:/var/www/html/resources
+      - ./web/routes:/var/www/html/routes
+      - ./web/public/build:/var/www/html/public/build
       - laravel_storage:/var/www/html/storage
       - laravel_sqlite:/var/lib/laravel
     depends_on:
       fastapi-api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1/up') === false ? 1 : 0);"]
+      test:
+        [
+          "CMD",
+          "php",
+          "-r",
+          "exit(@file_get_contents('http://127.0.0.1/up') === false ? 1 : 0);",
+        ]
       interval: 10s
       timeout: 5s
       retries: 12
     restart: unless-stopped
+
   web-test:
     profiles: ["test"]
     build:
-      context: ../web
+      context: ./web
       dockerfile: Dockerfile
       target: test
     environment:
@@ -105,6 +135,7 @@ services:
       CACHE_STORE: array
       QUEUE_CONNECTION: sync
     command: ["artisan", "test"]
+
 volumes:
   postgres_data:
   artifact_data:

@@ -38,7 +38,7 @@ class WorkbenchController extends Controller
             'models' => $models,
             'activeModel' => $active,
             'apiError' => $apiError,
-            'maxUploadMb' => config('services.ml_api.max_upload_mb'),
+            'maxUploadMb' => max(200, (int) (config('services.ml_api.max_upload_mb') ?: 200)),
         ]);
     }
 
@@ -117,8 +117,11 @@ class WorkbenchController extends Controller
     public function upload(Request $request, int $id, MlApi $api)
     {
         $production = $this->production($request, $id);
-        $max = (int) config('services.ml_api.max_upload_mb');
-        $request->validate(['file' => ['required', 'file', 'extensions:csv,xlsx', 'max:'.($max * 1024)]]);
+        $max = max(200, (int) (config('services.ml_api.max_upload_mb') ?: 200));
+        $request->validate(
+            ['file' => ['required', 'file', 'extensions:csv,xlsx', 'max:'.($max * 1024)]],
+            ['file.max' => "Choose a CSV or XLSX file no larger than {$max} MB."]
+        );
         $file = $request->file('file');
         $uploaded = $api->upload($file);
         $dataset = $production->datasets()->create([

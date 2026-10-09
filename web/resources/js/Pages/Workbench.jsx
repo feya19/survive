@@ -1,11 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import AppNavbar from '@/Components/AppNavbar';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 
 const fields = ['budget', 'genre', 'planned_duration', 'release_date', 'marketing_budget', 'revenue', 'audience'];
 const numericFields = ['budget', 'planned_duration', 'marketing_budget', 'revenue', 'audience'];
-const inputFields = ['budget', 'genre', 'planned_duration', 'marketing_budget'];
-const emptyPlan = { name: '', base_features: { budget: '', genre: '', planned_duration: '', marketing_budget: '' } };
+const inputFields = ['budget', 'genre'];
+const emptyPlan = { name: '', base_features: { budget: '', genre: '' } };
 const money = (value, currency) => value == null ? '—' : new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value) + (currency ? ` ${currency}` : ' (currency unspecified)');
 
 function FieldInputs({ values, onChange, required = ['budget', 'genre'], shown = inputFields }) {
@@ -28,7 +29,8 @@ function ErrorBox({ error }) {
     return error ? <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{error}</div> : null;
 }
 
-export default function Workbench({ productions, selectedProductionId, models, activeModel, apiError, maxUploadMb }) {
+export default function Workbench({ productions, selectedProductionId, models, activeModel, apiError, maxUploadMb = 200 }) {
+    const uploadLimit = Number(maxUploadMb) >= 200 ? Number(maxUploadMb) : 200;
     const { auth } = usePage().props;
     const [selectedId, setSelectedId] = useState(selectedProductionId);
     const production = productions.find(item => item.id === Number(selectedId));
@@ -123,7 +125,7 @@ export default function Workbench({ productions, selectedProductionId, models, a
         e.preventDefault();
         const file = e.currentTarget.elements.file.files[0];
         if (!file) return;
-        if (!/\.(csv|xlsx)$/i.test(file.name) || file.size > maxUploadMb * 1024 * 1024) { setError(`Choose a CSV or XLSX file no larger than ${maxUploadMb} MB.`); return; }
+        if (!/\.(csv|xlsx)$/i.test(file.name) || file.size > uploadLimit * 1024 * 1024) { setError(`Choose a CSV or XLSX file no larger than ${uploadLimit} MB.`); return; }
         const body = new FormData(); body.append('file', file);
         const data = await execute(() => axios.post(`/workbench/productions/${production.id}/datasets`, body, { onUploadProgress: event => event.total && setProgress(Math.round(event.loaded * 100 / event.total)) }), 'Dataset uploaded. Review its profile and mapping.');
         if (data) { e.target.reset(); selectDataset(data.id); }
@@ -138,11 +140,8 @@ export default function Workbench({ productions, selectedProductionId, models, a
     return <>
         <Head title="Production workbench" />
         <div className="min-h-screen bg-[#f3f4ef] text-slate-800">
-            <header className="bg-[#14281c] text-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-                <div><div className="text-xs font-bold uppercase tracking-[0.2em] text-lime-300">Northstar</div><h1 className="text-xl font-semibold">Production workbench</h1></div>
-                <div className="flex items-center gap-4 text-sm"><span>{auth.user.name}</span><Link href="/dashboard" className="text-lime-200 hover:underline">Movie dashboard</Link><Link href={route('profile.edit')} className="text-lime-200 hover:underline">Profile</Link><Link href={route('logout')} method="post" as="button" className="text-lime-200 hover:underline">Log out</Link></div>
-            </div></header>
-            <main className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">
+            <AppNavbar title="Production workbench" />
+            <main className="w-full space-y-5 px-6 py-6 sm:px-8 lg:px-10">
                 <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">Film revenue</p><h2 className="text-2xl font-bold text-[#14281c]">Plan, train, predict</h2><p className="mt-1 text-sm text-slate-600">Live dataset and model workflow. Audience and risk forecasts are unavailable.</p></div>
                     {productions.length > 0 && <label className="text-sm font-medium">Production <select className="ml-2 rounded-lg border-slate-300 text-sm" value={selectedId ?? ''} onChange={e => setSelectedId(Number(e.target.value))}>{productions.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>}
                 </div>
@@ -155,7 +154,7 @@ export default function Workbench({ productions, selectedProductionId, models, a
                 </div>}
 
                 {tab === 'datasets' && <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-                    <div className="space-y-5"><Card title="Upload training data"><p className="mb-4 text-sm text-slate-600">CSV or XLSX, up to {maxUploadMb} MB. Files are checked by FastAPI before being added here.</p>{production ? <form onSubmit={upload} className="space-y-3"><input name="file" type="file" accept=".csv,.xlsx" className="block w-full text-sm" required /><button disabled={busy} className="rounded-lg bg-[#14281c] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Upload dataset</button>{progress != null && <p className="text-xs">Transferring: {progress}%</p>}</form> : <p className="text-sm text-slate-500">Create a production first.</p>}</Card>
+                    <div className="space-y-5"><Card title="Upload training data"><p className="mb-4 text-sm text-slate-600">CSV or XLSX, up to {uploadLimit} MB. Files are checked by FastAPI before being added here.</p>{production ? <form onSubmit={upload} className="space-y-3"><input name="file" type="file" accept=".csv,.xlsx" className="block w-full text-sm" required /><button disabled={busy} className="rounded-lg bg-[#14281c] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Upload dataset</button>{progress != null && <p className="text-xs">Transferring: {progress}%</p>}</form> : <p className="text-sm text-slate-500">Create a production first.</p>}</Card>
                         <Card title="Uploaded datasets">{datasets.length ? <div className="space-y-2">{datasets.map(item => <button type="button" key={item.id} onClick={() => selectDataset(item.id)} className={`w-full rounded-lg border p-3 text-left text-sm ${datasetId === item.id ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:bg-slate-50'}`}><strong className="block break-all">{item.filename}</strong><span className="text-xs text-slate-500">{item.row_count.toLocaleString()} rows · {item.column_count} columns · {item.validation_report ? 'Validated' : 'Review needed'}</span></button>)}</div> : <p className="text-sm text-slate-500">No datasets uploaded for this production.</p>}</Card></div>
                     <Card title="Profile and mapping">{datasetId && !details && <p className="text-sm text-slate-500">Loading dataset...</p>}{!datasetId && <p className="text-sm text-slate-500">Select a dataset to review its columns.</p>}{details && <div className="space-y-5"><div className="flex flex-wrap gap-2 text-xs"><span className="rounded bg-slate-100 px-2 py-1">{details.profile.sampled_rows} profiled rows</span><span className="rounded bg-slate-100 px-2 py-1">{details.profile.duplicate_rows} duplicate rows in sample</span><span className="rounded bg-slate-100 px-2 py-1">Mapping: {details.mapping?.approved ? 'approved' : details.mapping ? 'saved, awaiting approval' : 'not saved'}</span></div>
                         <div className="flex flex-wrap gap-2"><button disabled={busy} onClick={suggest} className="rounded-lg border border-emerald-700 px-3 py-2 text-xs font-semibold text-emerald-800">Suggest mappings</button><button disabled={busy} onClick={saveMapping} className="rounded-lg border border-emerald-700 px-3 py-2 text-xs font-semibold text-emerald-800">Save mapping</button><button disabled={busy || !details.mapping || details.mapping.approved} onClick={async () => { if (await execute(() => axios.post(`/workbench/datasets/${datasetId}/approve`), 'Mapping approved.', false)) selectDataset(datasetId); }} className="rounded-lg border border-emerald-700 px-3 py-2 text-xs font-semibold text-emerald-800 disabled:opacity-40">Approve</button><button disabled={busy || !details.mapping?.approved} onClick={async () => { if (await execute(() => axios.post(`/workbench/datasets/${datasetId}/validate`), 'Dataset validated. Training is available.')) selectDataset(datasetId); }} className="rounded-lg bg-[#14281c] px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Validate</button></div>

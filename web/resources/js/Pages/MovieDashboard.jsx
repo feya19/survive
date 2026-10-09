@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import AppNavbar from '@/Components/AppNavbar';
 import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -193,7 +194,15 @@ function ErrorNotice({ title, message, response }) {
 }
 
 function Card({ title, description, children }) {
-    return <section className="rounded-2xl border border-[#e1e4da] bg-white p-5 shadow-sm sm:p-6"><div className="mb-4 border-b border-[#eff1eb] pb-3"><h2 className="text-lg font-semibold text-[#112316]">{title}</h2>{description && <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>}</div>{children}</section>;
+    return (
+        <section className="rounded-2xl border border-[#e2e6de] bg-white p-5 shadow-xs sm:p-6">
+            <div className="mb-4">
+                <h2 className="text-lg font-bold text-[#14281c]">{title}</h2>
+                {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+            </div>
+            {children}
+        </section>
+    );
 }
 
 function BudgetInput({ value, onChange }) {
@@ -271,7 +280,7 @@ function ToolResultCard({ result }) {
 
 function scenarioSignature(value) {
     if (!value) return '';
-    return JSON.stringify({ budget: Number(value.budget), genres: value.genres, planned_duration: value.planned_duration ?? null, marketing_budget: value.marketing_budget ?? null });
+    return JSON.stringify({ budget: Number(value.budget), genres: value.genres });
 }
 
 export default function MovieDashboard({ datasets = [], savedDashboards: initialSaved = [], dashboardTemplates = [], activeModel, modelError }) {
@@ -280,7 +289,7 @@ export default function MovieDashboard({ datasets = [], savedDashboards: initial
     const genreOptions = genreFeature.options ?? [];
     const optionalFeatures = activeModel?.features ?? {};
     const [savedDashboards, setSavedDashboards] = useState(initialSaved);
-    const [form, setForm] = useState({ budget: '', genres: [], planned_duration: '', marketing_budget: '' });
+    const [form, setForm] = useState({ budget: '', genres: [] });
     const [prediction, setPrediction] = useState(null);
     const [predictionInputs, setPredictionInputs] = useState(null);
     const [predictionBusy, setPredictionBusy] = useState(false);
@@ -314,10 +323,7 @@ export default function MovieDashboard({ datasets = [], savedDashboards: initial
         if (!form.budget || !form.genres.length) return null;
         const budget = Number(form.budget);
         if (!Number.isFinite(budget) || budget < 0) return null;
-        const result = { budget, genres: form.genres, currency: 'USD' };
-        if (form.planned_duration !== '' && optionalFeatures.planned_duration) result.planned_duration = Number(form.planned_duration);
-        if (form.marketing_budget !== '' && optionalFeatures.marketing_budget) result.marketing_budget = Number(form.marketing_budget);
-        return result;
+        return { budget, genres: form.genres, currency: 'USD' };
     };
     const currentScenario = context();
     const predictionIsStale = Boolean(prediction && (
@@ -362,8 +368,6 @@ export default function MovieDashboard({ datasets = [], savedDashboards: initial
         event.preventDefault(); setPredictionBusy(true); setError(''); setNotice('');
         try {
             const payload = { budget: Number(form.budget), genres: form.genres };
-            if (form.planned_duration !== '' && optionalFeatures.planned_duration) payload.planned_duration = Number(form.planned_duration);
-            if (form.marketing_budget !== '' && optionalFeatures.marketing_budget) payload.marketing_budget = Number(form.marketing_budget);
             const response = await axios.post('/movie/predictions', payload);
             setPrediction(response.data); setPredictionInputs(payload); setNotice('Prediction returned by the active movie model.');
         } catch (requestError) { reportError(requestError, 'Prediction could not run'); }
@@ -456,56 +460,93 @@ export default function MovieDashboard({ datasets = [], savedDashboards: initial
     return <>
         <Head title="Movie dashboard" />
         <div className="min-h-screen bg-[#f3f4ef] text-slate-800">
-            <header className="bg-[#14281c] text-white"><div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-                <div><div className="text-[10px] font-bold uppercase tracking-[0.24em] text-lime-300">SURVIVE · MOVIE INTELLIGENCE</div><h1 className="mt-1 text-xl font-semibold">Revenue dashboard</h1></div>
-                <div className="flex flex-wrap items-center gap-4 text-sm"><span className="text-emerald-100">{auth?.user?.name}</span><Link href="/workbench" className="rounded-lg border border-emerald-100/30 px-3 py-2 text-emerald-100 hover:bg-white/10">Production workbench</Link><Link href={route('profile.edit')} className="text-lime-200 hover:underline">Profile</Link><Link href={route('logout')} method="post" as="button" className="text-lime-200 hover:underline">Log out</Link></div>
-            </div></header>
-            <main className="mx-auto max-w-[1500px] space-y-5 px-4 py-6 sm:px-6 lg:px-8">
-                <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Model-backed decisions</p><h2 className="mt-1 text-2xl font-bold text-[#14281c] sm:text-3xl">Explore movie revenue with verified evidence</h2><p className="mt-2 max-w-3xl text-sm text-slate-600">Run a revenue prediction, ask the assistant to analyze it, and build dashboards from approved historical data.</p></div>
-                    {activeModel && <div className="rounded-xl border border-emerald-200 bg-white px-4 py-3 text-right shadow-sm"><div className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Active model</div><div className="mt-1 max-w-64 truncate font-mono text-xs text-slate-700">{activeModel.model_version}</div><div className="mt-1 text-xs text-slate-500">{activeModel.model_type} · {activeModel.currency ?? 'currency undeclared'}</div></div>}
+            <AppNavbar title="Revenue dashboard" />
+            <main className="w-full space-y-5 px-6 py-6 sm:px-8 lg:px-10">
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2c5332]">Model-backed decisions</p>
+                        <h2 className="mt-1 text-2xl font-bold text-[#14281c] sm:text-3xl">Explore movie revenue with verified evidence</h2>
+                        <p className="mt-2 text-sm text-slate-600">Run a revenue prediction, ask the assistant to analyze it, and build dashboards from approved historical data.</p>
+                    </div>
+                    {activeModel && (
+                        <div className="rounded-xl border border-emerald-200 bg-white px-4 py-3 text-right shadow-xs">
+                            <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">Active model</div>
+                            <div className="mt-1 truncate font-mono text-xs text-slate-700">{activeModel.model_version}</div>
+                            <div className="mt-1 text-xs text-slate-500">{activeModel.model_type} · {activeModel.currency ?? 'currency undeclared'}</div>
+                        </div>
+                    )}
                 </div>
-                {modelError && <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">{modelError} Use the separate production workbench to review model availability.</div>}
+
+                {modelError && (
+                    <div role="alert" className="rounded-xl border border-[#faecc4] bg-[#fffcf0] px-4 py-3.5 text-sm text-[#825b18] shadow-2xs">
+                        {modelError} Use the separate production workbench to review model availability.
+                    </div>
+                )}
                 {error && <ErrorNotice title={errorTitle} message={error} response={errorResponse} />}
                 {notice && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">{notice}</div>}
 
                 <div className="space-y-5">
                     <Card title="Movie revenue prediction" description="Run the active trained model for a USD point estimate. Inputs and model version stay visible with the result.">
-                        {!activeModel && <p className="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">No active movie model is available right now. Review model availability in the separate production workbench.</p>}
+                        {!activeModel && (
+                            <p className="mb-4 rounded-xl border border-[#faecc4] bg-[#fffcf0] px-4 py-3 text-sm text-[#825b18]">
+                                No active movie model is available right now. Review model availability in the separate production workbench.
+                            </p>
+                        )}
                         <form onSubmit={predict} className="space-y-4">
-                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                <label className="text-sm font-semibold text-slate-700">Production budget (USD)<BudgetInput value={form.budget} onChange={budget => updateForm({ budget })} /></label>
-                                <fieldset className="min-w-0 rounded-lg border border-slate-300 p-3 md:col-span-1 xl:col-span-2">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <label className="text-sm font-semibold text-slate-700">
+                                    Production budget (USD)
+                                    <BudgetInput value={form.budget} onChange={budget => updateForm({ budget })} />
+                                </label>
+                                <fieldset className="min-w-0 rounded-lg border border-slate-300 p-3">
                                     <legend className="px-1 text-sm font-semibold text-slate-700">Movie genres</legend>
                                     <GenrePicker options={genreOptions} multiple={genreFeature.multiple} value={form.genres} onChange={genres => updateForm({ genres })} />
                                     <span className="mt-2 block text-xs font-normal text-slate-500">Search the active model's vocabulary and select up to 16 genres.</span>
                                 </fieldset>
-                                {optionalFeatures.planned_duration && <label className="text-sm font-medium text-slate-700">Planned duration<input className="mt-1 w-full rounded-lg border-slate-300" type="number" min="0" step="any" value={form.planned_duration} onChange={event => updateForm({ planned_duration: event.target.value })} /></label>}
-                                {optionalFeatures.marketing_budget && <label className="text-sm font-medium text-slate-700">Marketing budget (USD)<input className="mt-1 w-full rounded-lg border-slate-300" type="number" min="0" step="any" value={form.marketing_budget} onChange={event => updateForm({ marketing_budget: event.target.value })} /></label>}
                             </div>
-                            {genreOptions.length === 0 && activeModel && <p className="text-sm text-amber-800">The active model did not report supported genre options; the API will validate submitted genres.</p>}
+                            {genreOptions.length === 0 && activeModel && (
+                                <p className="text-sm text-amber-800">The active model did not report supported genre options; the API will validate submitted genres.</p>
+                            )}
                             <div className="flex flex-wrap items-center gap-3">
-                                <button disabled={!activeModel || predictionBusy || !currentScenario} className="rounded-lg bg-[#14281c] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#203a2a] disabled:cursor-not-allowed disabled:opacity-50">{predictionBusy ? 'Running prediction...' : 'Predict revenue'}</button>
+                                <button
+                                    disabled={!activeModel || predictionBusy || !currentScenario}
+                                    className="rounded-lg bg-[#6d7e73] px-4 py-2.5 text-sm font-semibold text-white shadow-2xs transition hover:bg-[#14281c] disabled:cursor-not-allowed disabled:bg-[#78887e] disabled:opacity-90"
+                                >
+                                    {predictionBusy ? 'Running prediction...' : 'Predict revenue'}
+                                </button>
                                 {prediction && <span className="text-xs text-slate-500">Model version {prediction.model_version}</span>}
                             </div>
                         </form>
-                        {prediction && <div className={'mt-5 rounded-2xl border p-4 sm:p-5 ' + (predictionIsStale ? 'border-amber-200 bg-amber-50' : 'border-emerald-200 bg-emerald-50')}>
-                            {predictionIsStale && <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-2 text-xs text-amber-900"><span><strong>Inputs changed.</strong> This result is stale and will not be attached to AI requests or new dashboards.</span><button type="button" onClick={() => setForm(previous => ({ ...previous, budget: String(predictionInputs?.budget ?? ''), genres: predictionInputs?.genres ?? [], planned_duration: predictionInputs?.planned_duration === undefined ? '' : String(predictionInputs.planned_duration), marketing_budget: predictionInputs?.marketing_budget === undefined ? '' : String(predictionInputs.marketing_budget) }))} className="font-semibold underline">Restore predicted inputs</button></div>}
-                            <div className="grid gap-4 sm:grid-cols-3">
-                                <div><div className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Predicted revenue</div><div className="mt-1 text-3xl font-bold tracking-tight text-[#14281c]">{money(prediction.prediction?.revenue ?? prediction.predicted_revenue)}</div><p className="mt-1 text-xs text-emerald-900">Point estimate · {prediction.currency ?? 'currency undeclared'}</p></div>
-                                <div><div className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Predicted for</div><div className="mt-1 text-sm font-semibold text-emerald-950">{money(predictionInputs?.budget)} · {(predictionInputs?.genres ?? []).join(', ')}</div></div>
-                                <div><div className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Model version</div><div className="mt-1 break-all font-mono text-xs text-emerald-950">{prediction.model_version}</div></div>
+                        {prediction && (
+                            <div className={'mt-5 rounded-2xl border p-4 sm:p-5 ' + (predictionIsStale ? 'border-amber-200 bg-amber-50' : 'border-emerald-200 bg-emerald-50')}>
+                                {predictionIsStale && (
+                                    <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-white/80 px-3 py-2 text-xs text-amber-900">
+                                        <span><strong>Inputs changed.</strong> This result is stale and will not be attached to AI requests or new dashboards.</span>
+                                        <button type="button" onClick={() => setForm(previous => ({ ...previous, budget: String(predictionInputs?.budget ?? ''), genres: predictionInputs?.genres ?? [] }))} className="font-semibold underline">Restore predicted inputs</button>
+                                    </div>
+                                )}
+                                <div className="grid gap-4 sm:grid-cols-3">
+                                    <div><div className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Predicted revenue</div><div className="mt-1 text-3xl font-bold tracking-tight text-[#14281c]">{money(prediction.prediction?.revenue ?? prediction.predicted_revenue)}</div><p className="mt-1 text-xs text-emerald-900">Point estimate · {prediction.currency ?? 'currency undeclared'}</p></div>
+                                    <div><div className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Predicted for</div><div className="mt-1 text-sm font-semibold text-emerald-950">{money(predictionInputs?.budget)} · {(predictionInputs?.genres ?? []).join(', ')}</div></div>
+                                    <div><div className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Model version</div><div className="mt-1 break-all font-mono text-xs text-emerald-950">{prediction.model_version}</div></div>
+                                </div>
+                                <div className="mt-4 flex flex-wrap gap-2 border-t border-emerald-200 pt-4">
+                                    <button type="button" onClick={() => openAssistant('Explain this verified point prediction, including the model version and its limitations.')} className="rounded-lg border border-emerald-800/20 bg-white px-3 py-2 text-xs font-semibold text-emerald-900 hover:bg-emerald-100" disabled={!readyPrediction}>Ask AI to explain</button>
+                                    <button type="button" onClick={() => openAssistant('Compare the current budget with a 20% budget reduction using the active model. Label this as a non-causal what-if estimate.')} className="rounded-lg border border-emerald-800/20 bg-white px-3 py-2 text-xs font-semibold text-emerald-900 hover:bg-emerald-100" disabled={!readyPrediction}>Compare −20% scenario</button>
+                                    <button type="button" onClick={() => { setDashboardPrompt('Include my current verified movie revenue prediction and compare it with historical average revenue by genre.'); const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; dashboardBuilderRef.current?.scrollIntoView({ behavior, block: 'start' }); }} className="rounded-lg border border-emerald-800/20 bg-white px-3 py-2 text-xs font-semibold text-emerald-900 hover:bg-emerald-100">Add to dashboard request</button>
+                                </div>
                             </div>
-                            <div className="mt-4 flex flex-wrap gap-2 border-t border-emerald-200 pt-4">
-                                <button type="button" onClick={() => openAssistant('Explain this verified point prediction, including the model version and its limitations.')} className="rounded-lg border border-emerald-800/20 bg-white px-3 py-2 text-xs font-semibold text-emerald-900 hover:bg-emerald-100" disabled={!readyPrediction}>Ask AI to explain</button>
-                                <button type="button" onClick={() => openAssistant('Compare the current budget with a 20% budget reduction using the active model. Label this as a non-causal what-if estimate.')} className="rounded-lg border border-emerald-800/20 bg-white px-3 py-2 text-xs font-semibold text-emerald-900 hover:bg-emerald-100" disabled={!readyPrediction}>Compare −20% scenario</button>
-                                <button type="button" onClick={() => { setDashboardPrompt('Include my current verified movie revenue prediction and compare it with historical average revenue by genre.'); const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; dashboardBuilderRef.current?.scrollIntoView({ behavior, block: 'start' }); }} className="rounded-lg border border-emerald-800/20 bg-white px-3 py-2 text-xs font-semibold text-emerald-900 hover:bg-emerald-100">Add to dashboard request</button>
-                            </div>
-                        </div>}
+                        )}
                     </Card>
 
                     <div ref={dashboardBuilderRef} id="dashboard-builder" className="scroll-mt-5">
                         <Card title="Build a movie dashboard" description="Choose an approved historical source, start from an optional template, and generate a validated view from actual model or dataset results.">
-                            {!readyDatasets.length && <div className="mb-4 rounded-xl border border-[#ead9b2] bg-[#fffaf0] p-4 text-sm text-[#73551b]"><p className="font-semibold">No analytics-ready dataset is linked to this account.</p><p className="mt-1 leading-5">Approve and validate a dataset in the <Link href="/workbench" className="font-semibold underline">production workbench</Link>, then return here.</p></div>}
+                            {!readyDatasets.length && (
+                                <div className="mb-4 rounded-xl border border-[#faecc4] bg-[#fffcf0] p-4 text-sm text-[#825b18]">
+                                    <p className="font-semibold">No analytics-ready dataset is linked to this account.</p>
+                                    <p className="mt-1 leading-5">Approve and validate a dataset in the <Link href="/workbench" className="font-semibold underline text-[#825b18]">production workbench</Link>, then return here.</p>
+                                </div>
+                            )}
                             <form onSubmit={generateDashboard} className="space-y-4">
                                 <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
                                     <div className="rounded-xl border border-[#e1e4da] bg-[#fafbf9] p-4">

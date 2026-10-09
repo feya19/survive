@@ -3,8 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
-import AppSidebar from '@/Components/AppSidebar';
-import { ArrowLeft, LogOut } from 'lucide-react';
+import AppNavbar from '@/Components/AppNavbar';
 
 export default function Edit({ mustVerifyEmail, status }) {
     const { auth } = usePage().props;
@@ -35,56 +34,15 @@ export default function Edit({ mustVerifyEmail, status }) {
     })();
 
     return (
-        <div className="min-h-screen bg-[#f3f4ef] text-[#1c1f1d] flex flex-col md:flex-row font-sans antialiased selection:bg-[#c2e78c] selection:text-[#102414]">
+        <div className="min-h-screen bg-[#f3f4ef] text-[#1c1f1d] flex flex-col font-sans antialiased selection:bg-[#c2e78c] selection:text-[#102414]">
             <Head title="Profile — Survive" />
 
-            <AppSidebar user={user} activeKey="profile" />
+            <AppNavbar user={user} activeKey="profile" title="Profil Saya" />
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto min-h-screen">
-                {/* Top Nav Header */}
-                <header className="h-16 px-4 sm:px-8 border-b border-[#e2e5dc] flex items-center justify-between bg-[#f3f4ef]/90 backdrop-blur sticky top-0 z-20">
-                    <div className="flex items-center space-x-3">
-                        {/* Brand Badge */}
-                        <div className="flex items-center space-x-2.5">
-                            <div className="w-8 h-8 rounded-xl bg-[#9de062] flex items-center justify-center text-[#102414] font-bold text-sm shadow-xs shrink-0">
-                                S
-                            </div>
-                            <span className="font-extrabold text-sm sm:text-base tracking-wider uppercase text-[#112316]">
-                                SURVIVE
-                            </span>
-                        </div>
+            <main className="flex-1 overflow-y-auto">
 
-                        <span className="h-4 w-px bg-[#d8dcd0] hidden sm:block"></span>
-
-                        <Link
-                            href="/dashboard"
-                            className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold text-gray-600 hover:text-[#112316] transition-colors"
-                        >
-                            <ArrowLeft className="w-3.5 h-3.5" />
-                            <span>Kembali ke Dasbor</span>
-                        </Link>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                        <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-600 font-medium">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span className="text-[11px] font-semibold text-emerald-800 bg-[#e7f6d9] px-2.5 py-0.5 rounded-full border border-[#cde8b4]">
-                                Produser Aktif
-                            </span>
-                        </div>
-
-                        <button
-                            onClick={handleLogout}
-                            className="px-3 py-1.5 rounded-lg border border-[#d2d7cb] bg-white hover:bg-rose-50 text-xs font-semibold text-rose-600 flex items-center space-x-1.5 shadow-2xs transition-all"
-                        >
-                            <LogOut className="w-3.5 h-3.5" />
-                            <span>Keluar</span>
-                        </button>
-                    </div>
-                </header>
-
-                <div className="px-4 sm:px-8 py-8 max-w-6xl mx-auto">
+                <div className="w-full px-6 py-8 sm:px-8 lg:px-10">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         {/* Left Column: Profile Card */}
                         <div className="lg:col-span-4">
