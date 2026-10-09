@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'ml_api' => [
+        'url' => env('ML_API_URL', 'http://127.0.0.1:8000'),
+        'token' => env('ML_API_SERVICE_TOKEN'),
+        'max_upload_mb' => (int) env('ML_API_MAX_UPLOAD_MB', 20),
+    ],
+
 ];
