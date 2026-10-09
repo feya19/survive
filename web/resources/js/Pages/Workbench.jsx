@@ -30,6 +30,7 @@ function ErrorBox({ error }) {
 
 export default function Workbench({ productions, selectedProductionId, models, activeModel, apiError, maxUploadMb, domain = 'movie', domainConfig }) {
     const { auth } = usePage().props;
+    const uploadLimit = Math.max(200, Number(maxUploadMb) || 200);
     const fields = domainConfig.fields;
     const numericFields = domainConfig.numeric_fields;
     const dateFields = domainConfig.date_fields;
@@ -107,7 +108,7 @@ export default function Workbench({ productions, selectedProductionId, models, a
     };
     const saveMapping = async () => {
         const mappings = Object.entries(mapping).filter(([, target]) => target).map(([source_column, target_column]) => ({ source_column, target_column, transformation: numericFields.includes(target_column) ? 'numeric' : dateFields.includes(target_column) ? 'date' : 'categorical' }));
-        const data = await execute(() => axios.put(`/workbench/datasets/${datasetId}/mapping`, { mappings }), 'Mapping saved. Approval is required before validation.', false);
+        const data = await execute(() => axios.put(`/workbench/datasets/${datasetId}/mapping`, { mappings }), 'Mapping saved. Validate the dataset to continue.', false);
         if (data) selectDataset(datasetId);
     };
     const refreshJob = async id => {
