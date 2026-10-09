@@ -1,5 +1,6 @@
-import React from 'react';
-import AppNavbar from '@/Components/AppNavbar';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, router } from '@inertiajs/react';
+import { X } from 'lucide-react';
 
 /**
  * AppSidebar — Shared sidebar for all SURVIVE pages.
