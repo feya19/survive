@@ -1,59 +1,53 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Northstar Laravel workbench
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This Laravel 12 / Inertia React app manages production plans and connects to the FastAPI ML service in `../api`. It stores production plans, dataset references, training job references, and saved prediction comparisons in Laravel. The ML service owns the datasets, mappings, model registry, and predictions.
 
-## About Laravel
+## Docker deployment
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The shared Compose stack builds and runs Laravel, FastAPI, PostgreSQL, Redis, and the ML worker. From the repository root, prepare both environment files:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+```powershell
+Copy-Item api/.env.example api/.env
+Copy-Item web/.env.example web/.env
+```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Set a strong `SERVICE_TOKEN` in `api/.env`. Build the Laravel image and generate an application key:
 
-## Learning Laravel
+```powershell
+Set-Location api
+docker compose build
+docker compose run --rm --no-deps --entrypoint php web artisan key:generate --show
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Copy the generated `base64:...` value into `APP_KEY` in `web/.env`, set `APP_URL` there to the public site URL, then start the stack:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```powershell
+docker compose up -d
+```
 
-## Laravel Sponsors
+Open `http://localhost:8080`. Compose passes the API container's service token to Laravel and connects it to FastAPI over the private Compose network. Laravel uses a persistent SQLite volume and storage volume; migrations run at container startup. Set `LARAVEL_PORT` in `api/.env` to change the host port. For a TLS deployment, put a reverse proxy in front and set the public `APP_URL` in `web/.env`.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Useful commands from `api/`:
 
-### Premium Partners
+```powershell
+docker compose logs -f web
+docker compose exec web php artisan migrate:status
+docker compose build web
+docker compose --profile test run --build --rm web-test
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+The deployed image serves the production Vite build with Apache and PHP 8.3. It does not mount the source tree, so rebuilding is required after code changes.
 
-## Contributing
+## Local setup
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. Start FastAPI and its worker from `../api` using its README.
+2. Run `composer install` and `npm ci` in this directory.
+3. Copy `.env.example` to `.env`, run `php artisan key:generate`, and set `ML_API_SERVICE_TOKEN` to the `SERVICE_TOKEN` in `../api/.env`. Set `ML_API_URL` if FastAPI is not at `http://127.0.0.1:8000`.
+4. Create `database/database.sqlite`, run `php artisan migrate`, then run `php artisan serve` and `npm run dev`.
+5. Register or sign in. Create a production, upload a CSV/XLSX dataset, inspect the profile, save and approve a mapping, validate, train, promote a model, and save a comparison.
 
-## Code of Conduct
+The Docker entrypoint sets PHP `upload_max_filesize` to `ML_API_MAX_UPLOAD_MB` and leaves multipart overhead in `post_max_size`. Compose keeps this aligned with FastAPI's `MAX_UPLOAD_MB` setting.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+The active LightGBM model currently predicts **point revenue**. The UI reports the model version and only shows a currency if the model provides one. Audience forecasts, quantiles, risk scores, and production disruption simulation are not available in the current API. Promotions and rollbacks change the globally active model for all users.
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Run `php artisan test` and `npm run build` to verify the app. If the PHP CLI has SQLite extensions installed but disabled, enable `pdo_sqlite` and `sqlite3` in `php.ini` first, or run tests directly with `php -d extension=pdo_sqlite -d extension=sqlite3 vendor/bin/phpunit`.
