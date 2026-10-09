@@ -5,7 +5,7 @@ import { Head } from '@inertiajs/react';
 export default function Upload({ auth }) {
     return (
         <>
-            <Head title="Upload File & Data Ingestion — Northstar" />
+            <Head title="Upload File & Data Ingestion — Survive" />
             <ScenarioDashboard user={auth?.user} initialPage="upload" />
         </>
     );

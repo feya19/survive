@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { FileSpreadsheet, FileText, Calendar, TrendingUp, ArrowRight } from 'lucide-react';
 
 export default function FileUploadView({ onSwitchToDashboard }) {
     const fileInputRef = useRef(null);
@@ -6,7 +7,7 @@ export default function FileUploadView({ onSwitchToDashboard }) {
     const [uploadingFiles, setUploadingFiles] = useState([
         {
             id: 1,
-            name: 'Northstar_Principal_Budget_v18.2.xlsx',
+            name: 'Survive_Studio_Principal_Budget_v18.2.xlsx',
             size: '14.8 MB',
             progress: 100,
             status: 'Ready',
@@ -19,7 +20,7 @@ export default function FileUploadView({ onSwitchToDashboard }) {
     const [uploadedVault, setUploadedVault] = useState([
         {
             id: 'doc-1',
-            name: 'Northstar_Master_Budget_Final.xlsx',
+            name: 'Survive_Studio_Master_Budget_Final.xlsx',
             size: '14.2 MB',
             type: 'XLSX',
             category: 'Budget Sheet',
@@ -153,9 +154,7 @@ export default function FileUploadView({ onSwitchToDashboard }) {
             {/* Page Header */}
             <div>
                 <div className="text-xs text-gray-500 font-medium mb-1 space-x-1.5">
-                    <span>Productions</span>
-                    <span>/</span>
-                    <span>Northstar</span>
+                    <span>Survive</span>
                     <span>/</span>
                     <span className="text-gray-800 font-semibold">Data Ingestion</span>
                 </div>
@@ -234,10 +233,22 @@ export default function FileUploadView({ onSwitchToDashboard }) {
                 </p>
 
                 <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold text-gray-600">
-                    <span className="px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200">📊 Excel Budget (.xlsx)</span>
-                    <span className="px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200">📑 Rate Sheets (.pdf)</span>
-                    <span className="px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200">📅 Schedule (.csv)</span>
-                    <span className="px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200">📈 Forecast (.json)</span>
+                    <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200">
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Excel Budget (.xlsx)</span>
+                    </span>
+                    <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200">
+                        <FileText className="w-3.5 h-3.5 text-rose-500" />
+                        <span>Rate Sheets (.pdf)</span>
+                    </span>
+                    <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200">
+                        <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                        <span>Schedule (.csv)</span>
+                    </span>
+                    <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-gray-100 border border-gray-200">
+                        <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Forecast (.json)</span>
+                    </span>
                 </div>
 
                 <div className="mt-6">
@@ -254,7 +265,7 @@ export default function FileUploadView({ onSwitchToDashboard }) {
                         <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Recent Upload Queue ({uploadingFiles.length})
                         </h4>
-                        <span className="text-[11px] text-gray-500">Auto-saved to Northstar vault</span>
+                        <span className="text-[11px] text-gray-500">Auto-saved to Survive vault</span>
                     </div>
 
                     <div className="space-y-2.5">
@@ -265,7 +276,7 @@ export default function FileUploadView({ onSwitchToDashboard }) {
                             >
                                 <div className="flex items-center space-x-3 truncate">
                                     <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">
-                                        📄
+                                        <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
                                     </div>
                                     <div className="truncate">
                                         <div className="text-xs font-bold text-[#112316] truncate">{f.name}</div>
@@ -285,9 +296,10 @@ export default function FileUploadView({ onSwitchToDashboard }) {
                                     <span className="text-[11px] font-bold text-emerald-700">{f.status}</span>
                                     <button
                                         onClick={onSwitchToDashboard}
-                                        className="text-xs font-semibold text-[#14281c] hover:underline"
+                                        className="text-xs font-semibold text-[#14281c] hover:underline inline-flex items-center space-x-1"
                                     >
-                                        Inspect Model ➔
+                                        <span>Inspect Model</span>
+                                        <ArrowRight className="w-3 h-3" />
                                     </button>
                                 </div>
                             </div>
@@ -305,7 +317,7 @@ export default function FileUploadView({ onSwitchToDashboard }) {
                         </span>
                         <h3 className="text-lg font-bold text-[#112316] mt-0.5">Project Data Vault</h3>
                         <p className="text-xs text-gray-500 mt-0.5">
-                            Files currently feeding the Northstar scenario models and assumptions register.
+                            Files currently feeding the Survive scenario models and assumptions register.
                         </p>
                     </div>
 
