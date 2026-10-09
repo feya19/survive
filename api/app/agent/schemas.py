@@ -112,12 +112,34 @@ class MovieScenarioContext(MoviePredictionArguments):
     name: str | None = Field(default=None, max_length=255)
 
 
+class VerifiedMoviePrediction(StrictArguments):
+    model_version: str = Field(min_length=1, max_length=255)
+    model_type: str = Field(min_length=1, max_length=120)
+    prediction_type: Literal["point"]
+    currency: Literal["USD"]
+    inputs: MovieScenarioContext
+    predicted_revenue: Decimal = Field(allow_inf_nan=False)
+
+
 class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     message: str = Field(min_length=1, max_length=4000)
     conversation: list[ChatTurn] = Field(default_factory=list, max_length=12)
     scenario_context: MovieScenarioContext | None = None
+    current_prediction: VerifiedMoviePrediction | None = None
     dataset_id: str | None = Field(default=None, min_length=1, max_length=36)
+
+    @model_validator(mode="after")
+    def validate_current_prediction_context(self):
+        if self.current_prediction is None:
+            return self
+        if self.scenario_context is None:
+            raise ValueError("A verified current prediction requires its authorized scenario context")
+        prediction_inputs = self.current_prediction.inputs.model_dump(exclude_none=True, exclude={"name"})
+        scenario_inputs = self.scenario_context.model_dump(exclude_none=True, exclude={"name"})
+        if prediction_inputs != scenario_inputs:
+            raise ValueError("The verified prediction inputs must match the authorized scenario context")
+        return self
 
 
 class ChatResponse(BaseModel):

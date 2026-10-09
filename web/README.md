@@ -1,6 +1,8 @@
 # Northstar Laravel workbench
 
-This Laravel 12 / Inertia React app manages production plans and connects to the FastAPI ML service in `../api`. It stores production plans, dataset references, training job references, and saved prediction comparisons in Laravel. The ML service owns the datasets, mappings, model registry, and predictions.
+This Laravel 12 / Inertia React app connects to the FastAPI ML service in `../api`. The movie dashboard (`/dashboard`) is the prediction, AI chat, generated dashboard, and saved snapshot experience. The production workbench (`/workbench`, with dataset onboarding at `/upload`) separately manages production plans, dataset references, training jobs, and model promotion. Laravel stores user-owned references and dashboard snapshots; the ML service owns datasets, mappings, model artifacts, analytics, and predictions.
+
+The dashboard reads the active model's feature contract before enabling predictions, sends budgets in USD, and displays model version and declared currency. Chat and dashboard requests proxy through Laravel with the service token; the browser never receives that credential. Dashboard drafts are checked against the verified result IDs and fields returned by FastAPI. Saving stores those validated results with dataset/model provenance so reopening a dashboard renders the same snapshot.
 
 ## Docker deployment
 
@@ -44,7 +46,7 @@ The deployed image serves the production Vite build with Apache and PHP 8.3. It 
 2. Run `composer install` and `npm ci` in this directory.
 3. Copy `.env.example` to `.env`, run `php artisan key:generate`, and set `ML_API_SERVICE_TOKEN` to the `SERVICE_TOKEN` in `../api/.env`. Set `ML_API_URL` if FastAPI is not at `http://127.0.0.1:8000`.
 4. Create `database/database.sqlite`, run `php artisan migrate`, then run `php artisan serve` and `npm run dev`.
-5. Register or sign in. Create a production, upload a CSV/XLSX dataset, inspect the profile, save and approve a mapping, validate, train, promote a model, and save a comparison.
+5. Register or sign in. The `/dashboard` page uses an already-active movie model for predictions and AI analysis. For historical analytics, use `/workbench` to upload a CSV/XLSX dataset, approve its mapping, and validate it. Dashboard generation is enabled only for validated datasets. Training and model promotion stay in the production workbench.
 
 The Docker entrypoint sets PHP `upload_max_filesize` to `ML_API_MAX_UPLOAD_MB` and leaves multipart overhead in `post_max_size`. Compose keeps this aligned with FastAPI's `MAX_UPLOAD_MB` setting.
 

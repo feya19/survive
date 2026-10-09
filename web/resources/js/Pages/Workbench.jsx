@@ -140,7 +140,7 @@ export default function Workbench({ productions, selectedProductionId, models, a
         <div className="min-h-screen bg-[#f3f4ef] text-slate-800">
             <header className="bg-[#14281c] text-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
                 <div><div className="text-xs font-bold uppercase tracking-[0.2em] text-lime-300">Northstar</div><h1 className="text-xl font-semibold">Production workbench</h1></div>
-                <div className="flex items-center gap-4 text-sm"><span>{auth.user.name}</span><Link href={route('profile.edit')} className="text-lime-200 hover:underline">Profile</Link><Link href={route('logout')} method="post" as="button" className="text-lime-200 hover:underline">Log out</Link></div>
+                <div className="flex items-center gap-4 text-sm"><span>{auth.user.name}</span><Link href="/dashboard" className="text-lime-200 hover:underline">Movie dashboard</Link><Link href={route('profile.edit')} className="text-lime-200 hover:underline">Profile</Link><Link href={route('logout')} method="post" as="button" className="text-lime-200 hover:underline">Log out</Link></div>
             </div></header>
             <main className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">
                 <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">Film revenue</p><h2 className="text-2xl font-bold text-[#14281c]">Plan, train, predict</h2><p className="mt-1 text-sm text-slate-600">Live dataset and model workflow. Audience and risk forecasts are unavailable.</p></div>

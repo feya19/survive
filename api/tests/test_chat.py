@@ -128,6 +128,68 @@ def test_scenario_uses_authorized_baseline_and_real_model(real_model):
     assert scenario["causal_estimate"] is False
 
 
+def test_current_prediction_must_match_authorized_scenario_inputs():
+    with pytest.raises(ValidationError):
+        ChatRequest(
+            message="Explain my prediction.",
+            scenario_context={"budget": 2_000_000, "genres": ["Action"]},
+            current_prediction={
+                "model_version": "model-v7", "model_type": "lgbm_revenue", "prediction_type": "point",
+                "currency": "USD", "inputs": {"budget": 1_000_000, "genres": ["Action"]}, "predicted_revenue": 3_000_000,
+            },
+        )
+
+
+def test_dashboard_generation_adds_a_fresh_prediction_source_for_verified_current_prediction(monkeypatch):
+    prediction_id = "f2222222-2222-4222-8222-222222222222"
+    analytics_id = "f3333333-3333-4333-8333-333333333333"
+    executed = []
+
+    def run_tool(_db, name, arguments):
+        executed.append((name, arguments))
+        if name == "predict_movie_revenue":
+            return {"ok": True, "tool": name, "data": {
+                "result_id": prediction_id, "model_version": "model-v7", "currency": "USD",
+                "dashboard_data": {"fields": ["budget", "revenue"], "rows": [{"budget": 2_000_000, "revenue": 4_250_000}]},
+            }}
+        return {"ok": True, "tool": name, "data": {
+            "result_id": analytics_id,
+            "dashboard_data": {"fields": ["genre", "average_revenue"], "rows": [{"genre": "Action", "average_revenue": 8_000_000}]},
+        }}
+
+    monkeypatch.setattr("app.agent.orchestrator.execute_tool", run_tool)
+
+    class DashboardClient(FakeInstructor):
+        def generate_structured(self, messages, response_model):
+            if response_model is DashboardSpec:
+                return DashboardSpec.model_validate({
+                    "title": "Prediction and history", "domain": "movie", "widgets": [{
+                        "id": "prediction", "type": "kpi", "title": "Predicted revenue",
+                        "data_ref": prediction_id, "metric_field": "revenue", "display_format": "currency",
+                    }],
+                })
+            return super().generate_structured(messages, response_model)
+
+    scenario = {"budget": 2_000_000, "genres": ["Action"], "currency": "USD"}
+    request = ChatRequest(
+        message="Generate an overview with my current prediction and historical genre revenue.",
+        dataset_id="authorized-dataset",
+        scenario_context=scenario,
+        current_prediction={
+            "model_version": "model-v7", "model_type": "lgbm_revenue", "prediction_type": "point",
+            "currency": "USD", "inputs": scenario, "predicted_revenue": 4_250_000,
+        },
+    )
+    result = ChatOrchestrator(DashboardClient(decision=_decision(
+        "dashboard_generation", "query_movie_analytics", {"operation": "average_revenue_by_genre"}
+    ))).respond(None, request, dashboard_generation=True)
+
+    assert [name for name, _ in executed] == ["predict_movie_revenue", "query_movie_analytics"]
+    assert executed[0][1]["budget"] == 2_000_000
+    assert result["dashboard_spec"]["widgets"][0]["data_ref"] == prediction_id
+    assert result["tool_execution"]["results"][0]["data"]["model_version"] == "model-v7"
+
+
 def test_model_information_uses_registry_tool(real_model):
     client = FakeInstructor(decision=_decision("model_information", "get_active_movie_model"))
     result = ChatOrchestrator(client).respond(None, ChatRequest(message="Which model and genres are active?"))

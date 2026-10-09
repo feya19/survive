@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 
 class MlApi
 {
-    private function client(): PendingRequest
+    private function client(int $timeout = 60): PendingRequest
     {
         $token = config('services.ml_api.token');
         if (! is_string($token) || $token === '') {
@@ -19,13 +19,13 @@ class MlApi
 
         return Http::baseUrl(rtrim(config('services.ml_api.url'), '/'))
             ->withHeader('X-Service-Token', $token)
-            ->acceptJson()->connectTimeout(5)->timeout(60);
+            ->acceptJson()->connectTimeout(5)->timeout($timeout);
     }
 
-    public function request(string $method, string $path, array $data = []): array
+    public function request(string $method, string $path, array $data = [], int $timeout = 60): array
     {
         try {
-            $response = $this->client()->send($method, '/api/v1/'.$path, ['json' => $data]);
+            $response = $this->client($timeout)->send($method, '/api/v1/'.$path, ['json' => $data]);
         } catch (ConnectionException $e) {
             throw new HttpResponseException(response()->json(['message' => 'The ML service is unavailable.'], 503));
         }
@@ -52,9 +52,17 @@ class MlApi
     {
         if ($response->failed()) {
             $detail = $response->json('detail');
-            $message = is_string($detail) ? $detail : 'The ML service rejected the request.';
+            $message = $this->errorMessage($detail) ?? 'The ML service rejected the request.';
             $status = in_array($response->status(), [404, 409, 413, 422, 503], true) ? $response->status() : 502;
-            throw new HttpResponseException(response()->json(['message' => $message, 'detail' => $detail], $status));
+            $payload = ['message' => $message, 'detail' => $detail, 'service_status' => $response->status()];
+            if (is_array($detail)) {
+                foreach (['code', 'tool_execution', 'needs_input'] as $key) {
+                    if (array_key_exists($key, $detail)) {
+                        $payload[$key] = $detail[$key];
+                    }
+                }
+            }
+            throw new HttpResponseException(response()->json($payload, $status));
         }
 
         $body = $response->json();
@@ -63,5 +71,32 @@ class MlApi
         }
 
         return $body;
+    }
+
+    private function errorMessage(mixed $detail): ?string
+    {
+        if (is_string($detail) && trim($detail) !== '') {
+            return trim($detail);
+        }
+        if (is_array($detail)) {
+            if (is_string($detail['message'] ?? null) && trim($detail['message']) !== '') {
+                return trim($detail['message']);
+            }
+            if (array_is_list($detail)) {
+                $messages = array_filter(array_map(function ($issue) {
+                    if (! is_array($issue) || ! is_string($issue['msg'] ?? null)) {
+                        return null;
+                    }
+                    $path = implode('.', array_filter($issue['loc'] ?? [], 'is_string'));
+
+                    return ($path !== '' ? $path.': ' : '').$issue['msg'];
+                }, $detail));
+                if ($messages) {
+                    return implode(' ', $messages);
+                }
+            }
+        }
+
+        return null;
     }
 }

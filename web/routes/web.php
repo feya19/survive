@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MovieDashboardController;
 use App\Http\Controllers\WorkbenchController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -16,9 +17,17 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [WorkbenchController::class, 'index'])->name('dashboard');
-    Route::get('/scenario-lab', [WorkbenchController::class, 'index'])->name('scenario-lab');
+    Route::get('/dashboard', [MovieDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/scenario-lab', [MovieDashboardController::class, 'index'])->name('scenario-lab');
+    Route::get('/workbench', [WorkbenchController::class, 'index'])->name('workbench');
     Route::get('/upload', [WorkbenchController::class, 'index'])->name('upload');
+    Route::post('/movie/predictions', [MovieDashboardController::class, 'predict']);
+    Route::post('/movie/chat', [MovieDashboardController::class, 'chat']);
+    Route::post('/movie/dashboards/generate', [MovieDashboardController::class, 'generate']);
+    Route::post('/movie/dashboards/{id}/refresh', [MovieDashboardController::class, 'refresh']);
+    Route::post('/movie/dashboards/{id}/save', [MovieDashboardController::class, 'save']);
+    Route::get('/movie/dashboards/{id}', [MovieDashboardController::class, 'show']);
+    Route::delete('/movie/dashboards/{id}', [MovieDashboardController::class, 'destroy']);
     Route::post('/workbench/productions', [WorkbenchController::class, 'storeProduction']);
     Route::put('/workbench/productions/{id}', [WorkbenchController::class, 'updateProduction']);
     Route::post('/workbench/productions/{id}/datasets', [WorkbenchController::class, 'upload']);

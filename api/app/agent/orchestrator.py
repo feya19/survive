@@ -4,7 +4,7 @@ from openai import APIStatusError, APIConnectionError, APITimeoutError, RateLimi
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.agent.schemas import ChatDecision, ChatExplanation, ChatRequest
+from app.agent.schemas import ChatDecision, ChatExplanation, ChatRequest, ToolCall
 from app.agent.tool_executor import execute_tool
 from app.agent.tool_registry import TOOL_REGISTRY
 from app.ai.instructor_client import InstructorClient
@@ -41,6 +41,12 @@ class ChatOrchestrator:
             messages.append({
                 "role": "system",
                 "content": "Server-verified authorized movie scenario snapshot (JSON):\n" + json.dumps(context),
+            })
+        if request.current_prediction:
+            prediction = request.current_prediction.model_dump(mode="json")
+            messages.append({
+                "role": "system",
+                "content": "Server-verified successful current movie prediction (JSON). Use these values as evidence only for the exact inputs and model version shown; do not extrapolate or alter them:\n" + json.dumps(prediction),
             })
         if request.dataset_id:
             messages.append({
@@ -101,11 +107,14 @@ class ChatOrchestrator:
             return "A requested model operation failed. Review the structured results; no complete answer was generated.", False
         return "I could not complete that request. No prediction was generated.", False
 
-    def _answer(self, messages: list[dict], results: list[dict], intent: str) -> str:
+    def _answer(self, messages: list[dict], results: list[dict], intent: str, request: ChatRequest) -> str:
         if intent == "dashboard_generation" and not results:
             return "To generate a dashboard, select an approved historical dataset and provide any movie budget and genres you want included."
 
-        evidence = json.dumps(results, default=str)
+        evidence = json.dumps({
+            "tool_results": results,
+            "current_prediction": request.current_prediction.model_dump(mode="json") if request.current_prediction else None,
+        }, default=str)
         answer_messages = [
             {"role": "system", "content": ANSWER_SYSTEM_PROMPT},
             {"role": "system", "content": "Verified tool results (empty means no model operation ran):\n" + evidence},
@@ -148,8 +157,13 @@ class ChatOrchestrator:
             "needs_input": False,
         }
 
-    def respond(self, db: Session, request: ChatRequest) -> dict:
+    def respond(self, db: Session, request: ChatRequest, *, dashboard_generation: bool = False) -> dict:
         messages = self._messages(request)
+        if dashboard_generation:
+            messages.insert(1, {
+                "role": "system",
+                "content": "This request came from the dedicated dashboard generation action. Set intent to dashboard_generation and select the registered analytics tools needed to build a dashboard from the authorized dataset. Do not answer with analysis alone.",
+            })
         try:
             decision = self._structured(messages, ChatDecision)
         except (RateLimitError, APITimeoutError, APIConnectionError, APIStatusError) as exc:
@@ -160,7 +174,12 @@ class ChatOrchestrator:
             return self._invalid_response(exc)
 
         results: list[dict] = []
-        selected = decision.tool_calls[:MAX_TOOL_CALLS]
+        selected = list(decision.tool_calls[:MAX_TOOL_CALLS])
+        if dashboard_generation and request.current_prediction and not any(
+            call.tool_name == "predict_movie_revenue" for call in selected
+        ):
+            # Make the saved dashboard source a fresh, request-scoped inference result.
+            selected = [ToolCall(tool_name="predict_movie_revenue", arguments={}), *selected][:MAX_TOOL_CALLS]
         for call in selected:
             tool = TOOL_REGISTRY.get(call.tool_name)
             if tool is None:
@@ -172,13 +191,14 @@ class ChatOrchestrator:
             if not result.get("ok"):
                 break
 
-        execution = self._execution(results, len(results), decision.intent, decision.reasoning_summary)
+        intent = "dashboard_generation" if dashboard_generation else decision.intent
+        execution = self._execution(results, len(results), intent, decision.reasoning_summary)
         if any(not result.get("ok") for result in results):
             answer, needs_input = self._tool_error_answer(results)
             return {"answer": answer, "tool_execution": execution, "needs_input": needs_input}
 
         try:
-            answer = self._answer(messages, results, decision.intent)
+            answer = self._answer(messages, results, intent, request)
         except (RateLimitError, APITimeoutError, APIConnectionError, APIStatusError) as exc:
             # The validated model result is still available to Laravel when explanation fails.
             LOG.warning("OpenRouter explanation request failed", extra={"error_type": type(exc).__name__})
@@ -189,7 +209,7 @@ class ChatOrchestrator:
 
         dashboard_spec = None
         dashboard_error = None
-        if decision.intent == "dashboard_generation":
+        if intent == "dashboard_generation":
             if not results:
                 return {"answer": answer, "tool_execution": execution, "needs_input": True}
             try:
