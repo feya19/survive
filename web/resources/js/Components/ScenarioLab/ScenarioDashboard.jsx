@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import FileUploadView from './FileUploadView';
+import { Link, router } from '@inertiajs/react';
+import AppSidebar from '@/Components/AppSidebar';
+import { Calendar, TrendingUp, AlertTriangle, Sparkles, Check, DollarSign } from 'lucide-react';
 
 export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
     // Current Active Page in Sidebar ('dashboard' | 'upload')
@@ -286,198 +289,25 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#f3f4ef] text-[#1c1f1d] flex flex-col md:flex-row font-sans antialiased selection:bg-[#c2e78c] selection:text-[#102414]">
-            {/* Mobile Top Header (Small Screens Only) */}
-            <div className="md:hidden bg-[#122318] text-white px-4 py-3 flex items-center justify-between border-b border-[#1d3525] sticky top-0 z-40">
-                <div className="flex items-center space-x-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#9de062] flex items-center justify-center text-[#102414] font-bold text-base shadow-sm">
-                        F
-                    </div>
-                    <div>
-                        <span className="text-[10px] tracking-wider uppercase text-emerald-300 font-bold block leading-tight">
-                            NORTHSTAR
-                        </span>
-                        <span className="text-xs font-semibold text-white">
-                            {currentPage === 'dashboard' ? 'Scenario Lab' : 'Upload File'}
-                        </span>
-                    </div>
-                </div>
+        <div className="h-screen bg-[#f3f4ef] text-[#1c1f1d] flex flex-col md:flex-row font-sans antialiased selection:bg-[#c2e78c] selection:text-[#102414] overflow-hidden">
+            <AppSidebar
+                user={user}
+                activeKey={currentPage === 'upload' ? 'upload' : 'dashboard'}
+                onNavigate={(page) => { setCurrentPage(page); }}
+            />
 
-                <div className="flex items-center space-x-2">
-                    <button
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="p-2 rounded-lg bg-[#1a3323] text-emerald-200 hover:text-white"
-                        aria-label="Toggle Navigation Menu"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {mobileMenuOpen ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                            )}
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            {/* Mobile Drawer Overlay */}
-            {mobileMenuOpen && (
-                <div
-                    className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex"
-                    onClick={() => setMobileMenuOpen(false)}
-                >
-                    <div
-                        className="w-64 bg-[#122318] h-full p-5 flex flex-col justify-between shadow-2xl animate-in slide-in-from-left duration-200"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between border-b border-[#1e3827] pb-4">
-                                <div className="flex items-center space-x-2.5">
-                                    <div className="w-9 h-9 rounded-xl bg-[#9de062] flex items-center justify-center text-[#102414] font-bold text-lg">
-                                        F
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-bold text-white leading-tight">Northstar Studio</div>
-                                        <div className="text-[10px] text-emerald-400/80">Decision Intelligence</div>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="text-gray-400 hover:text-white"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-
-                            <nav className="space-y-2">
-                                <button
-                                    onClick={() => handleSelectPage('dashboard')}
-                                    className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
-                                        currentPage === 'dashboard'
-                                            ? 'bg-[#1f3a27] text-[#9de062] shadow-xs'
-                                            : 'text-gray-300 hover:bg-[#1a3122] hover:text-white'
-                                    }`}
-                                >
-                                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                    </svg>
-                                    <span>Dashboard (Scenario Lab)</span>
-                                </button>
-
-                                <button
-                                    onClick={() => handleSelectPage('upload')}
-                                    className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors ${
-                                        currentPage === 'upload'
-                                            ? 'bg-[#1f3a27] text-[#9de062] shadow-xs'
-                                            : 'text-gray-300 hover:bg-[#1a3122] hover:text-white'
-                                    }`}
-                                >
-                                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                    </svg>
-                                    <span>Upload File (Data Ingest)</span>
-                                </button>
-                            </nav>
-                        </div>
-
-                        <div className="pt-4 border-t border-[#1e3827] flex items-center space-x-3">
-                            <div className="w-8 h-8 rounded-full bg-[#3d4f40] border border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center justify-center">
-                                {user ? user.name.charAt(0).toUpperCase() : 'A'}
-                            </div>
-                            <div className="truncate">
-                                <div className="text-xs font-bold text-white truncate">{user ? user.name : 'Producer Admin'}</div>
-                                <div className="text-[10px] text-gray-400 truncate">{user ? user.email : 'northstar@studio.com'}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Desktop Left Sidebar (2 Pages: Dashboard & Upload File) */}
-            <aside className="hidden md:flex w-16 lg:w-48 bg-[#122318] flex-col items-center lg:items-stretch py-5 justify-between shrink-0 border-r border-[#1a3122] transition-all">
-                <div className="flex flex-col space-y-7">
-                    {/* Brand Icon & Title */}
-                    <div className="flex items-center space-x-3 px-3 justify-center lg:justify-start">
-                        <div className="w-9 h-9 rounded-xl bg-[#9de062] flex items-center justify-center text-[#102414] font-bold text-lg shadow-sm shrink-0">
-                            F
-                        </div>
-                        <div className="hidden lg:block truncate">
-                            <span className="text-[10px] tracking-widest uppercase font-bold text-emerald-400/80 block leading-tight">
-                                PRODUCTION
-                            </span>
-                            <span className="text-xs font-bold text-white truncate block">Northstar</span>
-                        </div>
-                    </div>
-
-                    {/* Nav Items (2 Pages) */}
-                    <nav className="flex flex-col space-y-2 px-2">
-                        {/* Page 1: Dashboard */}
-                        <button
-                            onClick={() => setCurrentPage('dashboard')}
-                            title="Dashboard (Scenario Lab)"
-                            className={`w-full h-10 lg:h-10 rounded-xl flex items-center space-x-3 px-2.5 transition-all justify-center lg:justify-start ${
-                                currentPage === 'dashboard'
-                                    ? 'bg-[#1f3a27] text-[#9de062] shadow-xs'
-                                    : 'text-emerald-100/60 hover:bg-[#1a3122] hover:text-white'
-                            }`}
-                        >
-                            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                            </svg>
-                            <span className="hidden lg:inline text-xs font-bold truncate">Dashboard</span>
-                        </button>
-
-                        {/* Page 2: Upload File */}
-                        <button
-                            onClick={() => setCurrentPage('upload')}
-                            title="Upload Files (Data Ingestion)"
-                            className={`w-full h-10 lg:h-10 rounded-xl flex items-center space-x-3 px-2.5 transition-all justify-center lg:justify-start ${
-                                currentPage === 'upload'
-                                    ? 'bg-[#1f3a27] text-[#9de062] shadow-xs'
-                                    : 'text-emerald-100/60 hover:bg-[#1a3122] hover:text-white'
-                            }`}
-                        >
-                            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
-                            <span className="hidden lg:inline text-xs font-bold truncate">Upload File</span>
-                        </button>
-                    </nav>
-                </div>
-
-                {/* Bottom User Avatar */}
-                <div className="flex flex-col items-center lg:items-start space-y-3 px-2">
-                    <div className="w-full pt-3 border-t border-[#1d3525] flex items-center space-x-2.5 justify-center lg:justify-start">
-                        <div className="w-8 h-8 rounded-full bg-[#3d4f40] border border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center justify-center shrink-0">
-                            {user ? user.name.charAt(0).toUpperCase() : 'A'}
-                        </div>
-                        <div className="hidden lg:block truncate">
-                            <div className="text-xs font-bold text-white truncate">{user ? user.name : 'Producer'}</div>
-                            <div className="text-[10px] text-gray-400">Admin</div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto">
+            {/* Main Content Area — scrollable */}
+            <main className="flex-1 overflow-y-auto h-screen">
                 {/* Top Nav Header */}
                 <header className="h-16 px-4 sm:px-8 border-b border-[#e2e5dc] flex items-center justify-between bg-[#f3f4ef]/80 backdrop-blur sticky top-0 z-20">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#27382d] text-white flex items-center justify-center text-xs font-semibold">
-                            N
+                    {/* Brand Badge */}
+                    <div className="flex items-center space-x-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-[#9de062] flex items-center justify-center text-[#102414] font-bold text-sm shadow-xs shrink-0">
+                            S
                         </div>
-                        <div>
-                            <span className="text-[10px] tracking-widest uppercase font-semibold text-gray-500 block leading-tight">
-                                PRODUCTION
-                            </span>
-                            <div className="flex items-center space-x-1.5 cursor-pointer">
-                                <span className="font-semibold text-sm text-[#112316]">Northstar</span>
-                                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
+                        <span className="font-extrabold text-sm sm:text-base tracking-wider uppercase text-[#112316]">
+                            SURVIVE
+                        </span>
                     </div>
 
                     <div className="flex items-center space-x-2 sm:space-x-4">
@@ -516,9 +346,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                             {/* Breadcrumbs & Title */}
                             <div>
                                 <div className="text-xs text-gray-500 font-medium mb-1 space-x-1.5">
-                                    <span>Productions</span>
-                                    <span>/</span>
-                                    <span>Northstar</span>
+                                    <span>Survive</span>
                                     <span>/</span>
                                     <span className="text-gray-800 font-semibold">Scenario lab</span>
                                 </div>
@@ -587,7 +415,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                                     >
                                         <span className="w-2 h-2 rounded-full bg-amber-600"></span>
                                         <span className="font-semibold">Crew cost +15%</span>
-                                        {activeScenario === 'crew-cost' && <span className="text-[#a16207] text-xs">✓</span>}
+                                        {activeScenario === 'crew-cost' && <Check className="w-3.5 h-3.5 text-[#a16207]" />}
                                     </button>
 
                                     {/* Pill: 6-week delay */}
@@ -601,7 +429,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                                     >
                                         <span className="w-2 h-2 rounded-full bg-rose-500"></span>
                                         <span className="font-semibold">6-week delay</span>
-                                        {activeScenario === 'delay' && <span className="text-rose-600 text-xs">✓</span>}
+                                        {activeScenario === 'delay' && <Check className="w-3.5 h-3.5 text-rose-600" />}
                                     </button>
 
                                     {/* Pill: Revenue downside */}
@@ -615,7 +443,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                                     >
                                         <span className="w-2 h-2 rounded-full bg-purple-500"></span>
                                         <span className="font-semibold">Revenue downside</span>
-                                        {activeScenario === 'revenue-downside' && <span className="text-purple-600 text-xs">✓</span>}
+                                        {activeScenario === 'revenue-downside' && <Check className="w-3.5 h-3.5 text-purple-600" />}
                                     </button>
                                 </div>
 
@@ -656,7 +484,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                                     <div className="flex items-center justify-between text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">
                                         <div className="flex items-center space-x-2">
                                             <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
-                                                $
+                                                <DollarSign className="w-3.5 h-3.5 text-emerald-700" />
                                             </div>
                                             <span>TOTAL COST</span>
                                         </div>
@@ -680,7 +508,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                                     <div className="flex items-center justify-between text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">
                                         <div className="flex items-center space-x-2">
                                             <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                                                📅
+                                                <Calendar className="w-3.5 h-3.5 text-emerald-700" />
                                             </div>
                                             <span>FINISH DATE</span>
                                         </div>
@@ -704,7 +532,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                                     <div className="flex items-center justify-between text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">
                                         <div className="flex items-center space-x-2">
                                             <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                                                📈
+                                                <TrendingUp className="w-3.5 h-3.5 text-emerald-700" />
                                             </div>
                                             <span>PROJECTED REVENUE</span>
                                         </div>
@@ -728,7 +556,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                                     <div className="flex items-center justify-between text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">
                                         <div className="flex items-center space-x-2">
                                             <div className="w-6 h-6 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center">
-                                                ⚠️
+                                                <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
                                             </div>
                                             <span>PLAN RISK</span>
                                         </div>
@@ -806,8 +634,8 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
 
                                     {/* Driver Insight Callout */}
                                     <div className="mt-4 bg-[#eff5e7] border border-[#d6e4c7] rounded-xl p-3 flex items-start space-x-3 text-xs text-[#20401b]">
-                                        <div className="w-5 h-5 rounded-md bg-[#d2e7bf] flex items-center justify-center shrink-0 text-sm">
-                                            ✨
+                                        <div className="w-5 h-5 rounded-md bg-[#d2e7bf] flex items-center justify-center shrink-0">
+                                            <Sparkles className="w-3.5 h-3.5 text-emerald-800" />
                                         </div>
                                         <p className="leading-relaxed">
                                             <strong>Primary driver:</strong> {current.primaryDriver}
@@ -986,7 +814,7 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                                                     <span className="text-[10px] opacity-75 font-mono">{s.diff}</span>
                                                 </div>
                                                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 ${shocks[s.key] ? 'bg-indigo-600 text-white' : 'text-gray-400'}`}>
-                                                    {shocks[s.key] ? '✓' : '+'}
+                                                    {shocks[s.key] ? <Check className="w-2.5 h-2.5" /> : '+'}
                                                 </span>
                                             </button>
                                         ))}
@@ -1042,13 +870,20 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                                                 </div>
                                                 <button
                                                     onClick={() => toggleMitigation(opt.id)}
-                                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all inline-flex items-center space-x-1.5 ${
                                                         addedMitigations[opt.id]
                                                             ? 'bg-emerald-700 text-white shadow-2xs'
                                                             : 'border border-[#d2d7cb] bg-white hover:bg-gray-100 text-gray-800'
                                                     }`}
                                                 >
-                                                    {addedMitigations[opt.id] ? '✓ Added to plan' : 'Add to plan'}
+                                                    {addedMitigations[opt.id] ? (
+                                                        <>
+                                                            <Check className="w-3.5 h-3.5" />
+                                                            <span>Added to plan</span>
+                                                        </>
+                                                    ) : (
+                                                        <span>Add to plan</span>
+                                                    )}
                                                 </button>
                                             </div>
                                         </div>
