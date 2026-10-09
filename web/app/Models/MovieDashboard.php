@@ -12,7 +12,7 @@ class MovieDashboard extends Model
 
     protected $keyType = 'string';
 
-    protected $fillable = ['id', 'user_id', 'name', 'dataset_api_id', 'spec', 'sources', 'provenance', 'request_prompt', 'scenario_context', 'template_id', 'saved_at'];
+    protected $fillable = ['id', 'user_id', 'name', 'dataset_api_id', 'spec', 'sources', 'provenance', 'request_prompt', 'scenario_context', 'template_id', 'perspective', 'insight', 'saved_at'];
 
     protected function casts(): array
     {

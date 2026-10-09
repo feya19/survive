@@ -5,8 +5,9 @@ from celery import Celery
 from sqlalchemy import select
 from .core import settings
 from .db import SessionLocal, TrainingJob, DatasetVersion, ModelVersion, now
-from .pipeline import digest, trusted, FEATURES, verify_model
+from .pipeline import digest, trusted, FEATURES, ADVERTISING_FEATURES, verify_model
 from .ml.adapters.lgbm_notebook import LightGBMNotebookTrainingAdapter
+from .ml.adapters.advertising_lgbm import AdvertisingLightGBMTrainingAdapter
 
 LOG = logging.getLogger(__name__)
 celery_app = Celery("survive", broker=settings().redis_url, backend=settings().redis_url)
@@ -28,12 +29,19 @@ def train_job(job_id: str):
                 raise ValueError("Dataset checksum mismatch")
             output = settings().storage_root / "models" / job.id
             output.mkdir(parents=True, exist_ok=False)
-            adapter = LightGBMNotebookTrainingAdapter()
+            adapters = {
+                "lgbm_revenue": (LightGBMNotebookTrainingAdapter, FEATURES),
+                "lgbm_advertising_revenue": (AdvertisingLightGBMTrainingAdapter, ADVERTISING_FEATURES),
+            }
+            if job.model_type not in adapters:
+                raise ValueError("Unsupported model family")
+            adapter_class, allowed_features = adapters[job.model_type]
+            adapter = adapter_class()
             adapter.validate_dataset(source, job.parameters)
             adapter.train(source, {**job.parameters, "dataset_version_id": version.id}, output)
             manifest = adapter.export_artifacts(output)
             metrics = adapter.evaluate(output)
-            if manifest.get("training_dataset_version") != version.id or manifest.get("model_type") != job.model_type or not set(manifest.get("feature_columns", [])).issubset(FEATURES):
+            if manifest.get("training_dataset_version") != version.id or manifest.get("model_type") != job.model_type or not set(manifest.get("feature_columns", [])).issubset(allowed_features):
                 raise ValueError("Manifest mismatch")
             if not all(isinstance(metrics.get(k), (int, float)) for k in ("mae", "rmse")):
                 raise ValueError("Invalid metrics")

@@ -33,12 +33,12 @@ class MlApi
         return $this->result($response);
     }
 
-    public function upload(UploadedFile $file): array
+    public function upload(UploadedFile $file, string $domain = 'movie'): array
     {
         $stream = fopen($file->getRealPath(), 'rb');
         try {
             $response = $this->client()->attach('file', $stream, $file->getClientOriginalName())
-                ->timeout(300)->post('/api/v1/datasets');
+                ->timeout(300)->post('/api/v1/datasets', ['domain' => $domain]);
         } catch (ConnectionException $e) {
             throw new HttpResponseException(response()->json(['message' => 'The ML service is unavailable.'], 503));
         } finally {

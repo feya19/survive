@@ -3,7 +3,7 @@ import json
 import logging
 import uuid
 from pathlib import Path
-from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, Header, Request
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Literal
@@ -13,7 +13,7 @@ from .core import settings
 from .db import SessionLocal, Dataset, DatasetVersion, DatasetProfile, DatasetMapping, ValidationRun, TrainingJob, ModelVersion, ModelDeployment, now
 from .pipeline import (
     read_dataset, digest, profile, suggest, validate_mapping, standardize, trusted,
-    FIELDS, FEATURES, active_model, deploy, verify_model, active_movie_model_metadata,
+    active_model, deploy, verify_model, active_movie_model_metadata,
     predict_movie_revenue as run_movie_revenue, MovieInputError, UnsupportedGenreError, ModelChangedError,
 )
 from .agent.schemas import ChatRequest, ChatResponse, MoviePredictionArguments, BudgetShockArguments
@@ -21,6 +21,16 @@ from .agent.orchestrator import ChatOrchestrator
 from .analytics.movie_analytics import AnalyticsError, dataset_statistics, query_movie_analytics
 from .analytics.schemas import MovieAnalyticsQuery
 from .dashboards.templates import get_template, template_list
+from .advertising import (
+    AdvertisingInputError,
+    AdvertisingPredictionArguments,
+    AdvertisingSpendScenarioArguments,
+    advertising_analytics,
+    advertising_dataset_analytics,
+    advertising_metadata,
+    predict_advertising_revenue,
+    simulate_advertising_spend,
+)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
 app = FastAPI(title="Survive AI/ML API", version="0.1.0")
@@ -75,7 +85,7 @@ def ready(db: Session = Depends(db_session)):
 
 
 @app.post("/api/v1/datasets", dependencies=[Depends(auth)], status_code=201)
-async def upload(file: UploadFile = File(...), db: Session = Depends(db_session)):
+async def upload(file: UploadFile = File(...), domain: Literal["movie", "advertising"] = Form("movie"), db: Session = Depends(db_session)):
     filename = Path(file.filename or "").name
     suffix = Path(filename).suffix.lower()
     if suffix not in {".csv", ".xlsx"}:
@@ -108,21 +118,21 @@ async def upload(file: UploadFile = File(...), db: Session = Depends(db_session)
     except Exception as exc:
         path.unlink(missing_ok=True)
         raise HTTPException(422, f"Invalid dataset: {exc}")
-    ds = Dataset(id=dataset_id, filename=filename)
+    ds = Dataset(id=dataset_id, filename=filename, domain=domain)
     ver = DatasetVersion(dataset_id=dataset_id, version=1, kind="original", path=str(path), sha256=digest(path), row_count=len(df), column_count=len(df.columns))
     db.add_all([ds, ver])
     db.commit()
-    return {"dataset_id": dataset_id, "version": 1, "filename": filename, "status": "uploaded", "row_count": len(df), "column_count": len(df.columns)}
+    return {"dataset_id": dataset_id, "version": 1, "filename": filename, "domain": domain, "status": "uploaded", "row_count": len(df), "column_count": len(df.columns)}
 
 
 @app.get("/api/v1/datasets/{dataset_id}/profile", dependencies=[Depends(auth)])
 def dataset_profile(dataset_id: str, db: Session = Depends(db_session)):
-    get_or_404(db, Dataset, dataset_id)
+    dataset = get_or_404(db, Dataset, dataset_id)
     ver = original(db, dataset_id)
     existing = db.scalar(select(DatasetProfile).where(DatasetProfile.dataset_version_id == ver.id))
     if existing:
-        return existing.data
-    data = profile(trusted(ver.path), dataset_id)
+        return {**existing.data, "domain": dataset.domain}
+    data = {**profile(trusted(ver.path), dataset_id), "domain": dataset.domain}
     db.add(DatasetProfile(dataset_version_id=ver.id, data=data))
     db.commit()
     return data
@@ -130,8 +140,9 @@ def dataset_profile(dataset_id: str, db: Session = Depends(db_session)):
 
 @app.post("/api/v1/datasets/{dataset_id}/mapping/suggest", dependencies=[Depends(auth)])
 def mapping_suggest(dataset_id: str, db: Session = Depends(db_session)):
+    dataset = get_or_404(db, Dataset, dataset_id)
     data = dataset_profile(dataset_id, db)
-    return suggest(data["columns"])
+    return suggest(data["columns"], dataset.domain)
 
 
 @app.get("/api/v1/datasets/{dataset_id}/statistics", dependencies=[Depends(auth)])
@@ -207,10 +218,10 @@ def mapping_get(dataset_id: str, db: Session = Depends(db_session)):
 
 @app.put("/api/v1/datasets/{dataset_id}/mapping", dependencies=[Depends(auth)])
 def mapping_put(dataset_id: str, body: MappingInput, db: Session = Depends(db_session)):
-    get_or_404(db, Dataset, dataset_id)
+    dataset = get_or_404(db, Dataset, dataset_id)
     source_columns = list(read_dataset(trusted(original(db, dataset_id).path), 1).columns)
     try:
-        validate_mapping(body.model_dump(), source_columns)
+        validate_mapping(body.model_dump(), source_columns, dataset.domain)
     except ValueError as exc:
         raise HTTPException(422, str(exc))
     previous = latest_mapping(db, dataset_id)
@@ -234,10 +245,14 @@ def mapping_approve(dataset_id: str, db: Session = Depends(db_session)):
 
 @app.post("/api/v1/datasets/{dataset_id}/validate", dependencies=[Depends(auth)])
 def validate(dataset_id: str, db: Session = Depends(db_session)):
-    get_or_404(db, Dataset, dataset_id)
+    dataset = get_or_404(db, Dataset, dataset_id)
     mapping = latest_mapping(db, dataset_id)
-    if not mapping or not mapping.approved:
-        raise HTTPException(409, "Approved mapping required")
+    if not mapping:
+        raise HTTPException(409, "Save a mapping before validating the dataset")
+    if not mapping.approved:
+        mapping.approved = True
+        mapping.approved_at = now()
+        db.commit()
     prior = db.scalar(select(ValidationRun).where(ValidationRun.dataset_id == dataset_id, ValidationRun.mapping_revision == mapping.revision, ValidationRun.status == "passed"))
     if prior:
         return {"dataset_id": dataset_id, "validation_status": "passed", "training_ready": True, "standardized_version_id": prior.standardized_version_id, **prior.report}
@@ -245,7 +260,7 @@ def validate(dataset_id: str, db: Session = Depends(db_session)):
     version = db.scalar(select(func.count(DatasetVersion.id)).where(DatasetVersion.dataset_id == dataset_id, DatasetVersion.kind == "standardized")) + 1
     path = settings().storage_root / "datasets" / dataset_id / f"standardized_v{version}.csv"
     try:
-        report = standardize(trusted(source.path), mapping.data, path)
+        report = standardize(trusted(source.path), mapping.data, path, dataset.domain)
     except Exception as exc:
         db.add(ValidationRun(dataset_id=dataset_id, mapping_revision=mapping.revision, status="failed", report={"errors": [str(exc)]}))
         db.commit()
@@ -268,7 +283,8 @@ class TrainingInput(BaseModel):
 
 @app.post("/api/v1/training/jobs", dependencies=[Depends(auth)], status_code=202)
 def training_start(body: TrainingInput, idempotency_key: str | None = Header(None), db: Session = Depends(db_session)):
-    if body.model_type != "lgbm_revenue" or body.target != "revenue" or set(body.parameters) - {"random_seed"} or body.currency != "USD":
+    model_domains = {"lgbm_revenue": "movie", "lgbm_advertising_revenue": "advertising"}
+    if body.model_type not in model_domains or body.target != "revenue" or set(body.parameters) - {"random_seed"} or body.currency != "USD":
         raise HTTPException(422, "Unsupported training configuration")
     if idempotency_key:
         prior = db.scalar(select(TrainingJob).where(TrainingJob.idempotency_key == idempotency_key))
@@ -277,9 +293,12 @@ def training_start(body: TrainingInput, idempotency_key: str | None = Header(Non
                 raise HTTPException(409, "Idempotency key already used for another request")
             return {"job_id": prior.id, "status": prior.status}
     ver = get_or_404(db, DatasetVersion, body.dataset_version_id)
+    dataset = get_or_404(db, Dataset, ver.dataset_id)
+    if dataset.domain != model_domains[body.model_type]:
+        raise HTTPException(409, "Dataset domain does not match the requested model family")
     mapping = latest_mapping(db, ver.dataset_id)
     if ver.kind != "standardized" or not mapping or not mapping.approved or mapping.revision != ver.mapping_revision:
-        raise HTTPException(409, "Current approved validated dataset version required")
+        raise HTTPException(409, "Current validated dataset version required")
     if digest(trusted(ver.path)) != ver.sha256:
         raise HTTPException(409, "Dataset checksum mismatch")
     training_parameters = {**body.parameters, "currency": body.currency}
@@ -307,8 +326,12 @@ def model_response(model):
 
 
 @app.get("/api/v1/models", dependencies=[Depends(auth)])
-def models_list(db: Session = Depends(db_session)):
-    return [model_response(m) for m in db.scalars(select(ModelVersion).order_by(ModelVersion.created_at.desc())).all()]
+def models_list(domain: Literal["movie", "advertising"] | None = None, db: Session = Depends(db_session)):
+    query = select(ModelVersion).order_by(ModelVersion.created_at.desc())
+    if domain:
+        family = "lgbm_revenue" if domain == "movie" else "lgbm_advertising_revenue"
+        query = query.where(ModelVersion.model_type == family)
+    return [model_response(m) for m in db.scalars(query).all()]
 
 
 @app.get("/api/v1/models/active", dependencies=[Depends(auth)])
@@ -327,6 +350,14 @@ def models_active_features(db: Session = Depends(db_session)):
         raise HTTPException(503, str(exc))
     except Exception as exc:
         raise HTTPException(503, f"Active model metadata unavailable: {type(exc).__name__}")
+
+
+@app.get("/api/v1/advertising/models/active/features", dependencies=[Depends(auth)])
+def advertising_active_features(db: Session = Depends(db_session)):
+    try:
+        return advertising_metadata(db)
+    except Exception as exc:
+        raise HTTPException(503, f"Advertising model metadata unavailable: {type(exc).__name__}")
 
 
 @app.get("/api/v1/models/{model_id}", dependencies=[Depends(auth)])
@@ -412,6 +443,44 @@ def simulate_movie_budget(body: BudgetShockArguments, db: Session = Depends(db_s
         raise HTTPException(422, str(exc))
     except Exception as exc:
         raise HTTPException(503, f"Inference unavailable: {type(exc).__name__}")
+
+
+@app.post("/api/v1/predictions/advertising/revenue", dependencies=[Depends(auth)])
+def predict_advertising(body: AdvertisingPredictionArguments, db: Session = Depends(db_session)):
+    try:
+        return predict_advertising_revenue(body.model_dump(mode="json"), db)
+    except AdvertisingInputError as exc:
+        raise HTTPException(422, {"code": exc.code, "message": str(exc)})
+    except Exception as exc:
+        raise HTTPException(503, f"Advertising inference unavailable: {type(exc).__name__}")
+
+
+@app.post("/api/v1/scenarios/advertising/spend", dependencies=[Depends(auth)])
+def simulate_advertising(body: AdvertisingSpendScenarioArguments, db: Session = Depends(db_session)):
+    try:
+        return simulate_advertising_spend(body.model_dump(mode="json"), db)
+    except AdvertisingInputError as exc:
+        raise HTTPException(422, {"code": exc.code, "message": str(exc)})
+    except Exception as exc:
+        raise HTTPException(503, f"Advertising inference unavailable: {type(exc).__name__}")
+
+
+class AdvertisingAnalyticsInput(BaseModel):
+    operation: Literal[
+        "average_revenue_by_platform",
+        "average_revenue_by_campaign_type",
+        "average_revenue_by_industry",
+        "spend_revenue_scatter",
+    ]
+    dataset_id: str | None = None
+
+
+@app.post("/api/v1/analytics/advertising/query", dependencies=[Depends(auth)])
+def advertising_analytics_endpoint(body: AdvertisingAnalyticsInput, db: Session = Depends(db_session)):
+    try:
+        return advertising_dataset_analytics(db, body.dataset_id, body.operation) if body.dataset_id else advertising_analytics(body.operation)
+    except AdvertisingInputError as exc:
+        raise HTTPException(422, {"code": exc.code, "message": str(exc)})
 
 
 @app.post("/api/v1/chat", response_model=ChatResponse, dependencies=[Depends(auth)])

@@ -72,7 +72,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                         >
                             <span className="text-xs text-[#244b20] font-medium flex items-center space-x-1 bg-[#edf4e5] px-2.5 py-1 rounded-lg border border-[#d2e4c2]">
                                 <Check className="w-3.5 h-3.5 text-[#244b20]" />
-                                <span>Tersimpan</span>
+                                <span>Saved</span>
                             </span>
                         </Transition>
 
@@ -137,19 +137,19 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                             <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                             <div>
                                 <p className="text-xs text-amber-900 font-medium">
-                                    Email akun Anda belum diverifikasi.{' '}
+                                    Your account email has not been verified.{' '}
                                     <Link
                                         href={route('verification.send')}
                                         method="post"
                                         as="button"
                                         className="font-bold underline text-amber-800 hover:text-amber-950"
                                     >
-                                        Kirim ulang tautan verifikasi.
+                                        Resend the verification link.
                                     </Link>
                                 </p>
                                 {status === 'verification-link-sent' && (
                                     <p className="mt-1 text-xs font-semibold text-emerald-700">
-                                        Tautan verifikasi baru telah dikirimkan ke alamat email Anda.
+                                        A new verification link has been sent to your email address.
                                     </p>
                                 )}
                             </div>

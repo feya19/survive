@@ -18,18 +18,18 @@ export default function ForgotPassword({ status }) {
 
     return (
         <GuestLayout>
-            <Head title="Lupa Kata Sandi — Survive" />
+            <Head title="Forgot Password — Survive" />
 
             {/* Header */}
             <div className="mb-6">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#edf4e5] px-2.5 py-0.5 rounded-full border border-[#d2e4c2] inline-block mb-2">
-                    Pemulihan Akses
+                    Account recovery
                 </span>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#112316]">
-                    Lupa Kata Sandi?
+                    Forgot your password?
                 </h1>
                 <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                    Masukkan email studio Anda. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi akun Anda.
+                    Enter your Studio email address and we’ll send you a link to reset your password.
                 </p>
             </div>
 
@@ -65,7 +65,7 @@ export default function ForgotPassword({ status }) {
                         disabled={processing}
                         className="w-full py-3 rounded-xl bg-[#14281c] hover:bg-[#1e3828] text-white font-semibold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center space-x-2 disabled:opacity-60"
                     >
-                        <span>Kirim Tautan Atur Ulang</span>
+                        <span>Send reset link</span>
                         <ArrowRight className="w-4 h-4 text-[#9de062]" />
                     </button>
                 </div>
@@ -76,7 +76,7 @@ export default function ForgotPassword({ status }) {
                         className="inline-flex items-center space-x-1.5 text-xs font-semibold text-gray-600 hover:text-[#14281c] transition-colors"
                     >
                         <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Kembali ke halaman masuk</span>
+                        <span>Back to sign in</span>
                     </Link>
                 </div>
             </form>

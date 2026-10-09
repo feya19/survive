@@ -18,23 +18,9 @@
     }
 }
 
-.assistant-launcher {
-    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-}
-
-.assistant-drawer {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    animation: assistant-enter 160ms ease-out;
-}
-
 .movie-dashboard-widget {
     min-width: 0;
     overflow-wrap: anywhere;
-}
-
-@keyframes assistant-enter {
-    from { opacity: 0; transform: translateY(0.75rem); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {

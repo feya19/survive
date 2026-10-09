@@ -27,13 +27,6 @@ export default function GuestLayout({ children }) {
             <div className="w-full max-w-md bg-white rounded-3xl border border-[#e2e7dc] p-7 sm:p-9 shadow-xl shadow-emerald-950/5 relative z-10">
                 {children}
             </div>
-
-            {/* Footer */}
-            <div className="mt-8 text-center text-xs text-gray-500 relative z-10">
-                <span>SURVIVE Decision Intelligence © 2026</span>
-                <span className="mx-2 text-gray-300">•</span>
-                <span>Producer Decision Support</span>
-            </div>
         </div>
     );
 }

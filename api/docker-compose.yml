@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: survive
       POSTGRES_USER: survive
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-survive}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in api/.env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,8 +30,6 @@ services:
     build: .
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     env_file: .env
-    ports:
-      - "8000:8000"
     volumes:
       - artifact_data:/data
     depends_on:
@@ -75,7 +73,7 @@ services:
       ML_API_SERVICE_TOKEN: ${SERVICE_TOKEN:?Set SERVICE_TOKEN in api/.env}
       ML_API_MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-200}
     ports:
-      - "${LARAVEL_PORT:-8080}:80"
+      - "80:80"
     volumes:
       - laravel_storage:/var/www/html/storage
       - laravel_sqlite:/var/lib/laravel

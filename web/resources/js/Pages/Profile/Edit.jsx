@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import React from 'react';
+import { Head, usePage } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
@@ -8,8 +8,6 @@ import AppNavbar from '@/Components/AppNavbar';
 export default function Edit({ mustVerifyEmail, status }) {
     const { auth } = usePage().props;
     const user = auth.user;
-
-    const handleLogout = () => router.post('/logout');
 
     // 2 initials for the circular avatar (e.g. "MC" or "TU")
     const initials = (() => {
@@ -37,12 +35,11 @@ export default function Edit({ mustVerifyEmail, status }) {
         <div className="min-h-screen bg-[#f3f4ef] text-[#1c1f1d] flex flex-col font-sans antialiased selection:bg-[#c2e78c] selection:text-[#102414]">
             <Head title="Profile — Survive" />
 
-            <AppNavbar user={user} activeKey="profile" title="Profil Saya" />
+            <AppNavbar user={user} activeKey="profile" title="Profile" />
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto">
-
-                <div className="w-full px-6 py-8 sm:px-8 lg:px-10">
+                <div className="px-4 sm:px-8 py-8 max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         {/* Left Column: Profile Card */}
                         <div className="lg:col-span-4">

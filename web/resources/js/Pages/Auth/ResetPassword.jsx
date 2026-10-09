@@ -27,18 +27,18 @@ export default function ResetPassword({ token, email }) {
 
     return (
         <GuestLayout>
-            <Head title="Atur Ulang Kata Sandi — Survive" />
+            <Head title="Reset Password — Survive" />
 
             {/* Header */}
             <div className="mb-6">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#edf4e5] px-2.5 py-0.5 rounded-full border border-[#d2e4c2] inline-block mb-2">
-                    Keamanan Akun
+                    Account security
                 </span>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#112316]">
-                    Atur Ulang Kata Sandi
+                    Reset your password
                 </h1>
                 <p className="text-xs text-gray-500 mt-1">
-                    Buat kata sandi baru yang aman untuk akun studio Anda.
+                    Create a new, secure password for your Studio account.
                 </p>
             </div>
 
@@ -62,7 +62,7 @@ export default function ResetPassword({ token, email }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="Kata Sandi Baru" />
+                    <InputLabel htmlFor="password" value="New password" />
                     <div className="relative">
                         <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
                         <TextInput
@@ -81,7 +81,7 @@ export default function ResetPassword({ token, email }) {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3.5 top-3 text-gray-400 hover:text-gray-600 focus:outline-none"
-                            aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
                         >
                             {showPassword ? (
                                 <EyeOff className="w-4 h-4" />
@@ -96,7 +96,7 @@ export default function ResetPassword({ token, email }) {
                 <div>
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Konfirmasi Kata Sandi Baru"
+                        value="Confirm new password"
                     />
                     <div className="relative">
                         <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
@@ -107,7 +107,7 @@ export default function ResetPassword({ token, email }) {
                             value={data.password_confirmation}
                             className="block w-full pl-10 pr-10 py-2.5"
                             autoComplete="new-password"
-                            placeholder="Ulangi kata sandi baru"
+                            placeholder="Re-enter your new password"
                             onChange={(e) =>
                                 setData('password_confirmation', e.target.value)
                             }
@@ -117,7 +117,7 @@ export default function ResetPassword({ token, email }) {
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             className="absolute right-3.5 top-3 text-gray-400 hover:text-gray-600 focus:outline-none"
-                            aria-label={showConfirmPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                         >
                             {showConfirmPassword ? (
                                 <EyeOff className="w-4 h-4" />
@@ -138,7 +138,7 @@ export default function ResetPassword({ token, email }) {
                         disabled={processing}
                         className="w-full py-3 rounded-xl bg-[#14281c] hover:bg-[#1e3828] text-white font-semibold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center space-x-2 disabled:opacity-60"
                     >
-                        <span>Simpan Kata Sandi Baru</span>
+                        <span>Save new password</span>
                         <ArrowRight className="w-4 h-4 text-[#9de062]" />
                     </button>
                 </div>
