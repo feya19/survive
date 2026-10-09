@@ -30,9 +30,6 @@ export default function Login({ status, canResetPassword }) {
 
             {/* Card Header */}
             <div className="mb-6">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#edf4e5] px-2.5 py-0.5 rounded-full border border-[#d2e4c2] inline-block mb-2">
-                    Portal Produser
-                </span>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#112316]">
                     Masuk ke Studio
                 </h1>

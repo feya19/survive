@@ -119,7 +119,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
             <div className="md:hidden bg-[#122318] text-white px-4 py-3 flex items-center justify-between border-b border-[#1d3525] sticky top-0 z-40">
                 <div className="flex items-center space-x-2.5">
                     <div className="w-8 h-8 rounded-lg bg-[#9de062] flex items-center justify-center text-[#102414] font-bold text-base shadow-sm">S</div>
-                    <span className="text-[10px] tracking-wider uppercase text-emerald-300 font-bold">SURVIVE</span>
+                    <span className="text-[10px] tracking-wider uppercase text-emerald-300 font-bold">SURVIVE STUDIO</span>
                 </div>
                 <button
                     onClick={() => setMobileOpen(!mobileOpen)}
@@ -151,7 +151,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
                             <div className="flex items-center justify-between border-b border-[#1e3827] pb-4">
                                 <div className="flex items-center space-x-2.5">
                                     <div className="w-9 h-9 rounded-xl bg-[#9de062] flex items-center justify-center text-[#102414] font-bold text-lg">S</div>
-                                    <span className="font-extrabold text-sm tracking-wider uppercase text-white">SURVIVE</span>
+                                    <span className="font-extrabold text-sm tracking-wider uppercase text-white">SURVIVE STUDIO</span>
                                 </div>
                                 <button onClick={() => setMobileOpen(false)} className="text-gray-400 hover:text-white p-1 rounded-lg">
                                     <X className="w-5 h-5" />
@@ -239,7 +239,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
                                 </div>
                                 <div className="truncate">
                                     <span className="font-extrabold text-sm tracking-wider uppercase text-white truncate block">
-                                        SURVIVE
+                                        SURVIVE STUDIO
                                     </span>
                                 </div>
                             </div>

@@ -293,6 +293,17 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                             <span>Live preview</span>
                         </div>
+                        <span className="font-extrabold text-sm sm:text-base tracking-wider uppercase text-[#112316]">
+                            SURVIVE STUDIO
+                        </span>
+                    </div>
+
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                        <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-600 font-medium">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>Saved 2 min ago</span>
+                        </div>
+
                         <button
                             type="button"
                             onClick={() => setCurrentPage(currentPage === 'dashboard' ? 'upload' : 'dashboard')}

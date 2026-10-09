@@ -178,7 +178,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                             </div>
                             <div className="text-left">
                                 <span className="font-black text-lg tracking-wider uppercase text-[#112316] block leading-none">
-                                    SURVIVE
+                                    SURVIVE STUDIO
                                 </span>
                                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#2d5822] block mt-1">
                                     Ruang Kerja Studio
@@ -332,12 +332,6 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
             <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto">
-                        {/* Lencana Portal Produser */}
-                        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#edf4e5] border border-[#d2e4c2] text-emerald-900 text-[11px] font-bold uppercase tracking-wider mb-6">
-                            <span className="w-2 h-2 rounded-full bg-[#9de062]" />
-                            <span>Portal Produser & Kecerdasan Keputusan Film</span>
-                        </div>
-
                         {/* Judul Utama */}
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#112316] leading-[1.12]">
                             Keputusan Produksi Film yang Terukur,{' '}
@@ -361,7 +355,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                     href={route('dashboard')}
                                     className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-bold text-sm shadow-lg shadow-emerald-950/15 flex items-center justify-center space-x-2.5 transition-all group"
                                 >
-                                    <span>Lanjut ke Dasbor Studio</span>
+                                    <span>Buka Studio</span>
                                     <ArrowRight className="w-4 h-4 text-[#9de062] group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             ) : (
@@ -402,139 +396,51 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                     </div>
 
                     {/* ─────────────────────────────────────────────────────────
-                        PRATINJAU INTERAKTIF (LIVE DEMO SHOWCASE)
+                        TAMPILAN ANTARMUKA ASLI (REAL APPLICATION SHOWCASE)
                     ────────────────────────────────────────────────────────── */}
-                    <div id="demo" className="mt-16 max-w-5xl mx-auto">
-                        <div className="bg-white rounded-3xl border border-[#e2e7dc] shadow-2xl shadow-emerald-950/10 overflow-hidden relative">
-                            {/* Bilah Atas Pratinjau */}
-                            <div className="bg-[#14281c] text-white px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b border-[#244b20]">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-                                    <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-                                    <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                                    <span className="text-xs font-mono text-emerald-200/70 ml-2 tracking-wider">
-                                        SURVIVE RUANG KERJA STUDIO // PRATINJAU SISTEM
-                                    </span>
-                                </div>
-                                <div className="flex items-center space-x-2 text-xs font-semibold">
-                                    <span className="text-gray-300">Status Sistem:</span>
-                                    <span className="bg-[#244b20] text-[#9de062] px-2.5 py-0.5 rounded-lg border border-[#3b7335]">
-                                        Model & Jalur Analisis Siap
+                    <div className="mt-14 max-w-5xl mx-auto">
+                        <div className="relative rounded-2xl sm:rounded-3xl p-2 sm:p-3 bg-gradient-to-b from-[#14281c] to-[#1a3424] border border-[#2b543b] shadow-2xl shadow-emerald-950/25">
+                            {/* Bilah Atas Jendela Studio */}
+                            <div className="px-4 py-3 flex items-center justify-between text-xs text-gray-300 border-b border-[#244b20]">
+                                <div className="flex items-center space-x-2">
+                                    <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
+                                    <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
+                                    <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                                    <span className="ml-3 font-mono text-[11px] text-emerald-200/80 tracking-wider hidden sm:inline">
+                                        SURVIVE STUDIO // Workspace & Model Analytics
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Tombol Tab Pilihan Simulasi */}
-                            <div className="bg-[#f9faf7] border-b border-[#e2e7dc] px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-                                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                                    <Sliders className="w-3.5 h-3.5 text-[#2d5822]" />
-                                    Pilih Simulasi:
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                    {Object.values(demoTabs).map((tab) => (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setActiveDemoTab(tab.id)}
-                                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
-                                                activeDemoTab === tab.id
-                                                    ? 'bg-[#14281c] text-[#9de062] shadow-sm'
-                                                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-[#e2e7dc]'
-                                            }`}
-                                        >
-                                            <span>{tab.tabTitle}</span>
-                                        </button>
-                                    ))}
-                                </div>
+                            {/* Gambar Dasbor Asli */}
+                            <div className="rounded-xl sm:rounded-2xl overflow-hidden bg-[#112316] border border-[#2b543b]">
+                                <img
+                                    src="/assets/dashboard.png"
+                                    alt="Antarmuka Dasbor SURVIVE Studio"
+                                    className="w-full h-auto object-cover object-top block hover:scale-[1.01] transition-transform duration-500"
+                                    loading="eager"
+                                />
                             </div>
 
-                            {/* Konten Simulasi Aktif */}
-                            <div className="p-6 sm:p-8">
-                                <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-                                    <div>
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#edf4e5] px-2.5 py-0.5 rounded-full border border-[#d2e4c2] inline-block mb-1.5">
-                                            {currentTab.domainBadge}
-                                        </span>
-                                        <h3 className="text-lg font-bold text-[#112316]">
-                                            {currentTab.headline}
-                                        </h3>
-                                        <p className="text-xs text-gray-500 font-mono mt-0.5">
-                                            {currentTab.inputSummary}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Kisi Indikator Kinerja Utama (KPI) */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {currentTab.kpis.map((kpi, index) => (
-                                        <div key={index} className="bg-[#f9faf7] rounded-2xl p-4 border border-[#e2e7dc]">
-                                            <div className="text-xs text-gray-500 font-medium">
-                                                {kpi.label}
-                                            </div>
-                                            <div className={`mt-2 text-2xl font-black ${kpi.color}`}>
-                                                {kpi.value}
-                                            </div>
-                                            <div className="mt-1 text-[11px] text-gray-500">
-                                                {kpi.subtext}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Visualisasi Diagram Komparatif */}
-                                <div className="mt-6 pt-6 border-t border-[#edf0ea]">
-                                    <div className="text-xs font-bold text-[#112316] uppercase tracking-wider mb-4">
-                                        {currentTab.barsTitle}
-                                    </div>
-                                    <div className="space-y-3">
-                                        {currentTab.bars.map((item, idx) => (
-                                            <div key={idx} className="space-y-1">
-                                                <div className="flex justify-between text-xs font-semibold text-gray-700">
-                                                    <span>{item.label}</span>
-                                                    <span className={`font-mono ${item.highlight ? 'text-[#14281c] font-bold' : 'text-gray-500'}`}>
-                                                        {item.value}
-                                                    </span>
-                                                </div>
-                                                <div className="w-full bg-[#edf0ea] h-2.5 rounded-full overflow-hidden flex">
-                                                    <div
-                                                        className={`h-full rounded-full transition-all duration-500 ${
-                                                            item.highlight ? 'bg-[#14281c]' : 'bg-[#9de062]'
-                                                        }`}
-                                                        style={{ width: `${item.percent}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Kartu Rekam Jejak Data (Provenance) */}
-                                <div className="mt-6 bg-[#edf4e5] border border-[#d2e4c2] rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-950 font-medium">
+                            {/* Keterangan Fitur pada Gambar */}
+                            <div className="px-4 py-3 bg-[#14281c]/90 rounded-b-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-emerald-100/80">
+                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-6 gap-y-1.5">
                                     <div className="flex items-center space-x-2">
-                                        <ShieldCheck className="w-4 h-4 text-[#2d5822] shrink-0" />
-                                        <span><strong>Rekam Jejak Data:</strong> {currentTab.provenance}</span>
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#9de062]" />
+                                        <span>Prediksi Kampanye & Belanja Media</span>
                                     </div>
-                                    <Link
-                                        href={route(auth?.user ? 'dashboard' : 'register')}
-                                        className="font-bold text-[#14281c] hover:underline flex items-center space-x-1"
-                                    >
-                                        <span>{currentTab.ctaText}</span>
-                                        <ChevronRight className="w-3.5 h-3.5" />
-                                    </Link>
+                                    <div className="flex items-center space-x-2">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#9de062]" />
+                                        <span>Wawasan Model Berdasarkan Data Historis</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#9de062]" />
+                                        <span>Generator Dasbor dari Dataset Tervalidasi</span>
+                                    </div>
                                 </div>
-                            </div>
-
-                            {/* Catatan Kaki Pratinjau */}
-                            <div className="bg-[#f3f4ef] px-6 py-4 border-t border-[#e2e7dc] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
-                                <span>
-                                    *Model dilatih menggunakan pustaka LightGBM dengan dataset riil film dan periklanan.
+                                <span className="text-[11px] text-emerald-300 font-mono shrink-0">
+                                    Dataset: global_ads_performance_dataset.csv
                                 </span>
-                                <Link
-                                    href={route('login')}
-                                    className="font-bold text-[#14281c] hover:underline flex items-center space-x-1 shrink-0"
-                                >
-                                    <span>Masuk untuk menguji dataset Anda</span>
-                                    <ChevronRight className="w-4 h-4" />
-                                </Link>
                             </div>
                         </div>
                     </div>
@@ -560,7 +466,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                     </div>
 
                     {/* Kisi-Kisi Fitur */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {/* Fitur 1: Prediksi Pendapatan Film */}
                         <div className="bg-[#f9faf7] rounded-3xl p-7 border border-[#e2e7dc] hover:border-[#9de062] transition-colors group">
                             <div className="w-12 h-12 rounded-2xl bg-[#edf4e5] border border-[#d2e4c2] flex items-center justify-center text-[#14281c] mb-5 group-hover:bg-[#9de062] transition-colors">
@@ -614,34 +520,6 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                                 Unggah berkas data produksi film atau kampanye periklanan Anda. Sistem menyediakan pemindaian profil otomatis,
                                 saran pemetaan kolom, dan standardisasi data sebelum dianalisis.
-                            </p>
-                        </div>
-
-                        {/* Fitur 5: Asisten AI Studio */}
-                        <div className="bg-[#f9faf7] rounded-3xl p-7 border border-[#e2e7dc] hover:border-[#9de062] transition-colors group">
-                            <div className="w-12 h-12 rounded-2xl bg-[#edf4e5] border border-[#d2e4c2] flex items-center justify-center text-[#14281c] mb-5 group-hover:bg-[#9de062] transition-colors">
-                                <Bot className="w-6 h-6 text-[#244b20] group-hover:text-[#102414]" />
-                            </div>
-                            <h3 className="text-lg font-bold text-[#112316] mb-2">
-                                Asisten AI Percakapan (Bahasa Alami)
-                            </h3>
-                            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                Ajukan pertanyaan bisnis dalam bahasa alami kepada asisten AI yang terintegrasi langsung dengan alat analitik.
-                                Asisten mampu menjalankan kueri data dan merancang draf dasbor baru seketika.
-                            </p>
-                        </div>
-
-                        {/* Fitur 6: Rekam Jejak Data Terverifikasi */}
-                        <div className="bg-[#f9faf7] rounded-3xl p-7 border border-[#e2e7dc] hover:border-[#9de062] transition-colors group">
-                            <div className="w-12 h-12 rounded-2xl bg-[#edf4e5] border border-[#d2e4c2] flex items-center justify-center text-[#14281c] mb-5 group-hover:bg-[#9de062] transition-colors">
-                                <ShieldCheck className="w-6 h-6 text-[#244b20] group-hover:text-[#102414]" />
-                            </div>
-                            <h3 className="text-lg font-bold text-[#112316] mb-2">
-                                Verifikasi Rekam Jejak Data (Provenance)
-                            </h3>
-                            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                Setiap hasil estimasi menyertakan metadata versi model yang aktif, tanda pengenal versi dataset,
-                                serta jumlah baris data sumber guna menjamin transparansi analisis bagi pemangku kepentingan.
                             </p>
                         </div>
                     </div>
@@ -738,17 +616,6 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                         </div>
 
                         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div className="bg-[#1a3424] rounded-2xl p-6 border border-[#2b543b]">
-                                <div className="text-3xl font-black text-[#9de062] mb-1">
-                                    LightGBM
-                                </div>
-                                <div className="text-sm font-bold text-white mb-2">
-                                    Algoritma Peningkat Gradien
-                                </div>
-                                <p className="text-xs text-emerald-100/60 leading-relaxed">
-                                    Model terlatih yang efisien dalam memetakan korelasi non-linear antara anggaran, genre, durasi, dan pendapatan.
-                                </p>
-                            </div>
 
                             <div className="bg-[#1a3424] rounded-2xl p-6 border border-[#2b543b]">
                                 <div className="text-3xl font-black text-[#9de062] mb-1">
@@ -771,18 +638,6 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                 </div>
                                 <p className="text-xs text-emerald-100/60 leading-relaxed">
                                     Fleksibilitas beralih antara pemodelan film layar lebar dan simulasi kampanye periklanan digital.
-                                </p>
-                            </div>
-
-                            <div className="bg-[#1a3424] rounded-2xl p-6 border border-[#2b543b]">
-                                <div className="text-3xl font-black text-[#9de062] mb-1">
-                                    100%
-                                </div>
-                                <div className="text-sm font-bold text-white mb-2">
-                                    Rekam Jejak Terverifikasi
-                                </div>
-                                <p className="text-xs text-emerald-100/60 leading-relaxed">
-                                    Setiap visualisasi mencantumkan versi model dan riwayat dataset secara transparan.
                                 </p>
                             </div>
                         </div>
@@ -824,16 +679,6 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                             menyarankan pemetaan nama kolom secara cerdas, dan menstandardisasi berkas agar siap digunakan untuk analisis model.
                         </p>
                     </div>
-
-                    <div className="bg-white rounded-2xl p-6 border border-[#e2e7dc]">
-                        <h3 className="text-sm font-bold text-[#112316] mb-2">
-                            Bagaimana cara kerja Asisten AI di dalam dasbor?
-                        </h3>
-                        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                            Asisten AI terhubung langsung dengan fungsi analitik sistem. Anda dapat mengajukan instruksi dalam bahasa alami,
-                            lalu asisten akan mengeksekusi kueri terverifikasi pada model atau dataset yang aktif, sekaligus merangkai komponen visual dasbor baru secara otomatis.
-                        </p>
-                    </div>
                 </div>
             </section>
 
@@ -861,7 +706,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                         href={route('dashboard')}
                                         className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-bold text-xs sm:text-sm transition-colors flex items-center justify-center space-x-2"
                                     >
-                                        <span>Masuk ke Dasbor Studio</span>
+                                        <span>Buka Studio</span>
                                         <ArrowRight className="w-4 h-4 text-[#9de062]" />
                                     </Link>
                                 ) : (
@@ -898,7 +743,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                 S
                             </div>
                             <span className="font-bold text-sm tracking-wider uppercase text-[#112316]">
-                                SURVIVE
+                                SURVIVE STUDIO
                             </span>
                             <span className="text-xs text-gray-400">|</span>
                             <span className="text-xs text-gray-500">
