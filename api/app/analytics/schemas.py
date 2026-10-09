@@ -60,5 +60,3 @@ class MovieAnalyticsResult(StrictAnalyticsModel):
     budget_bucket_size: float | None = None
     sampled_points: int | None = None
     sample_method: str | None = None
-
-\n

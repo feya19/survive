@@ -177,7 +177,7 @@ def dashboard_widget_query(body: MovieAnalyticsQuery, db: Session = Depends(db_s
 
 @app.post("/api/v1/dashboard/generate", dependencies=[Depends(auth)])
 def dashboard_generate(body: ChatRequest, db: Session = Depends(db_session)):
-    result = ChatOrchestrator().respond(db, body)
+    result = ChatOrchestrator().respond(db, body, dashboard_generation=True)
     if result.get("dashboard_spec") is None:
         raise HTTPException(422, {
             "code": result.get("dashboard_error", {}).get("code", "dashboard_not_generated"),

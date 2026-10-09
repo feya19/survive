@@ -58,7 +58,7 @@ export default function Edit({ mustVerifyEmail, status }) {
                         <span className="h-4 w-px bg-[#d8dcd0] hidden sm:block"></span>
 
                         <Link
-                            href="/scenario-lab"
+                            href="/dashboard"
                             className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold text-gray-600 hover:text-[#112316] transition-colors"
                         >
                             <ArrowLeft className="w-3.5 h-3.5" />

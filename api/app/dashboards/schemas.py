@@ -90,5 +90,3 @@ class DashboardTemplateSummary(StrictDashboardModel):
 
 class DashboardTemplate(DashboardTemplateSummary):
     widgets: list[dict[str, Any]]
-
-\n
