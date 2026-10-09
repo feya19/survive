@@ -21,6 +21,7 @@ class Dataset(Base):
     __tablename__ = "datasets"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
     filename: Mapped[str] = mapped_column(String(255))
+    domain: Mapped[str] = mapped_column(String(32), default="movie", index=True)
     status: Mapped[str] = mapped_column(String(32), default="uploaded")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Production extends Model
 {
-    protected $fillable = ['user_id', 'name', 'base_features'];
+    protected $fillable = ['user_id', 'domain', 'name', 'base_features'];
 
     protected function casts(): array
     {

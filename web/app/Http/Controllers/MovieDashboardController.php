@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MovieDashboard;
 use App\Models\ProductionDataset;
+use App\Services\AdvertisingWorkspace;
 use App\Services\MlApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -12,8 +13,28 @@ use Inertia\Inertia;
 
 class MovieDashboardController extends Controller
 {
-    public function index(Request $request, MlApi $api)
+    public function index(Request $request, MlApi $api, AdvertisingWorkspace $advertising)
     {
+        $defaultDomain = $request->routeIs('scenario-lab') ? 'movie' : 'advertising';
+        $domain = $request->query('domain', $defaultDomain);
+        if ($domain !== 'movie') {
+            $datasets = ProductionDataset::whereHas('production', fn ($query) => $query
+                ->where('user_id', $request->user()->id)
+                ->where('domain', 'advertising'))
+                ->with('production:id,name')->latest()->get()
+                ->map(fn (ProductionDataset $dataset) => [
+                    'id' => $dataset->id,
+                    'filename' => $dataset->filename,
+                    'production_name' => $dataset->production?->name,
+                    'row_count' => $dataset->row_count,
+                    'ready_for_analytics' => $dataset->standardized_version_id !== null,
+                ])->values();
+            return Inertia::render('AdvertisingWorkspace', [
+                ...$advertising->props(),
+                'datasets' => $datasets,
+            ]);
+        }
+
         $model = null;
         $modelError = null;
         try {
@@ -28,7 +49,7 @@ class MovieDashboardController extends Controller
             $templates = [];
         }
 
-        $datasets = ProductionDataset::whereHas('production', fn ($query) => $query->where('user_id', $request->user()->id))
+        $datasets = ProductionDataset::whereHas('production', fn ($query) => $query->where('user_id', $request->user()->id)->where('domain', 'movie'))
             ->with('production:id,name')->latest()->get()
             ->map(fn (ProductionDataset $dataset) => [
                 'id' => $dataset->id,
@@ -64,20 +85,10 @@ class MovieDashboardController extends Controller
             'budget' => ['required', 'numeric', 'min:0'],
             'genres' => ['required', 'array', 'min:1', 'max:16'],
             'genres.*' => ['required', 'string', 'max:80'],
-            'planned_duration' => ['nullable', 'numeric', 'min:0'],
-            'marketing_budget' => ['nullable', 'numeric', 'min:0'],
         ]);
         $genres = array_map(fn ($genre) => trim($genre), $data['genres']);
         if (in_array('', $genres, true) || count(array_unique(array_map('mb_strtolower', $genres))) !== count($genres)) {
             throw ValidationException::withMessages(['genres' => 'Choose one or more distinct genres.']);
-        }
-
-        $metadata = $api->request('GET', 'models/active/features');
-        $supported = $metadata['features'] ?? [];
-        foreach (['planned_duration', 'marketing_budget'] as $optional) {
-            if (($data[$optional] ?? null) !== null && ! array_key_exists($optional, $supported)) {
-                throw ValidationException::withMessages([$optional => 'The active model does not accept this input.']);
-            }
         }
 
         $payload = [
@@ -85,11 +96,6 @@ class MovieDashboardController extends Controller
             'genres' => $genres,
             'currency' => 'USD',
         ];
-        foreach (['planned_duration', 'marketing_budget'] as $optional) {
-            if (isset($data[$optional])) {
-                $payload[$optional] = (float) $data[$optional];
-            }
-        }
 
         $result = $api->request('POST', 'predictions/movie/revenue', $payload);
         $revenue = $result['prediction']['revenue'] ?? $result['predicted_revenue'] ?? null;
@@ -97,7 +103,7 @@ class MovieDashboardController extends Controller
             $request->session()->put('movie_dashboard.current_prediction', [
                 'inputs' => $payload,
                 'model_version' => $result['model_version'],
-                'model_type' => $result['model_type'] ?? ($metadata['model_type'] ?? 'unknown'),
+                'model_type' => $result['model_type'] ?? 'unknown',
                 'prediction_type' => 'point',
                 'currency' => 'USD',
                 'predicted_revenue' => (float) $revenue,
@@ -105,6 +111,29 @@ class MovieDashboardController extends Controller
         } else {
             $request->session()->forget('movie_dashboard.current_prediction');
         }
+
+        return response()->json($result);
+    }
+
+    public function scenario(Request $request, MlApi $api)
+    {
+        $data = $request->validate([
+            'budget' => ['required', 'numeric', 'min:0'],
+            'genres' => ['required', 'array', 'min:1', 'max:16'],
+            'genres.*' => ['required', 'string', 'max:80'],
+            'budget_change_percent' => ['required', 'numeric', 'between:-100,1000'],
+        ]);
+        $genres = array_map(fn ($genre) => trim($genre), $data['genres']);
+        if (in_array('', $genres, true) || count(array_unique(array_map('mb_strtolower', $genres))) !== count($genres)) {
+            throw ValidationException::withMessages(['genres' => 'Choose one or more distinct genres.']);
+        }
+
+        $result = $api->request('POST', 'scenarios/movie/budget', [
+            'budget' => (float) $data['budget'],
+            'genres' => $genres,
+            'currency' => 'USD',
+            'budget_change_percent' => (float) $data['budget_change_percent'],
+        ]);
 
         return response()->json($result);
     }
@@ -121,8 +150,6 @@ class MovieDashboardController extends Controller
             'scenario_context.budget' => ['required_with:scenario_context', 'numeric', 'min:0'],
             'scenario_context.genres' => ['required_with:scenario_context', 'array', 'min:1', 'max:16'],
             'scenario_context.genres.*' => ['required', 'string', 'max:80'],
-            'scenario_context.planned_duration' => ['nullable', 'numeric', 'min:0'],
-            'scenario_context.marketing_budget' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $dataset = isset($data['dataset_id']) ? $this->authorizedDataset($request, $data['dataset_id'], false) : null;
@@ -151,21 +178,20 @@ class MovieDashboardController extends Controller
     public function generate(Request $request, MlApi $api)
     {
         $data = $request->validate([
-            'message' => ['required', 'string', 'min:1', 'max:4000'],
             'dataset_id' => ['required', 'integer'],
+            'template_id' => ['required', 'string', 'max:80'],
+            'perspective' => ['sometimes', 'in:business,technical'],
             'scenario_context' => ['nullable', 'array'],
             'scenario_context.budget' => ['required_with:scenario_context', 'numeric', 'min:0'],
             'scenario_context.genres' => ['required_with:scenario_context', 'array', 'min:1', 'max:16'],
             'scenario_context.genres.*' => ['required', 'string', 'max:80'],
-            'scenario_context.planned_duration' => ['nullable', 'numeric', 'min:0'],
-            'scenario_context.marketing_budget' => ['nullable', 'numeric', 'min:0'],
-            'template_id' => ['nullable', 'string', 'max:80'],
         ]);
         $dataset = $this->authorizedDataset($request, $data['dataset_id'], true);
         $scenario = $data['scenario_context'] ?? null;
+        $perspective = $data['perspective'] ?? 'business';
         $template = $this->dashboardTemplate($api, $data['template_id'] ?? null);
         $result = $api->request('POST', 'dashboard/generate', [
-            'message' => $this->dashboardPrompt($data['message'], $template),
+            'message' => $this->dashboardPrompt($template, $perspective),
             'dataset_id' => $dataset->api_id,
             'scenario_context' => $this->scenarioContext($scenario),
             'current_prediction' => $this->verifiedPrediction($request, $api, $scenario),
@@ -175,9 +201,12 @@ class MovieDashboardController extends Controller
             $result['dashboard_spec'] ?? null,
             $result['tool_execution']['results'] ?? [],
             $dataset->api_id,
-            $data['message'],
+            $template['description'] ?? $template['title'] ?? 'Movie dashboard template',
             $scenario,
             $template['id'] ?? null,
+            null,
+            $perspective,
+            $result['answer'] ?? null,
         );
 
         return response()->json(['answer' => $result['answer'] ?? '', 'dashboard' => $dashboard], 201);
@@ -193,7 +222,7 @@ class MovieDashboardController extends Controller
         $scenario = $dashboard->scenario_context;
         $template = $this->dashboardTemplate($api, $dashboard->template_id);
         $result = $api->request('POST', 'dashboard/generate', [
-            'message' => $this->dashboardPrompt($prompt, $template),
+            'message' => $this->dashboardPrompt($template, $dashboard->perspective ?? 'business'),
             'dataset_id' => $dataset->api_id,
             'scenario_context' => $this->scenarioContext($scenario),
             'current_prediction' => $this->verifiedPrediction($request, $api, $scenario),
@@ -207,6 +236,8 @@ class MovieDashboardController extends Controller
             $scenario,
             $dashboard->template_id,
             $dashboard,
+            $dashboard->perspective ?? 'business',
+            $result['answer'] ?? null,
         );
 
         return response()->json(['answer' => $result['answer'] ?? '', 'dashboard' => $updated]);
@@ -242,7 +273,7 @@ class MovieDashboardController extends Controller
         $dataset = ProductionDataset::whereHas('production', fn ($query) => $query->where('user_id', $request->user()->id))
             ->findOrFail($id);
         if ($requireValidated && ! $dataset->standardized_version_id) {
-            throw ValidationException::withMessages(['dataset_id' => 'Select a dataset that has been approved and validated in the production workbench.']);
+            throw ValidationException::withMessages(['dataset_id' => 'Select a dataset that has been validated in the production workbench.']);
         }
 
         return $dataset;
@@ -258,12 +289,6 @@ class MovieDashboardController extends Controller
             'genres' => array_values($context['genres']),
             'currency' => 'USD',
         ];
-        foreach (['planned_duration', 'marketing_budget'] as $optional) {
-            if (isset($context[$optional])) {
-                $result[$optional] = (float) $context[$optional];
-            }
-        }
-
         return $result;
     }
 
@@ -282,12 +307,6 @@ class MovieDashboardController extends Controller
                 'genres' => array_values($inputs['genres'] ?? []),
                 'currency' => 'USD',
             ];
-            foreach (['planned_duration', 'marketing_budget'] as $field) {
-                if (isset($inputs[$field])) {
-                    $normalized[$field] = (float) $inputs[$field];
-                }
-            }
-
             return $normalized;
         };
         if ($normalize($prediction['inputs']) !== $normalize($scenario)) {
@@ -318,19 +337,23 @@ class MovieDashboardController extends Controller
         return $templateId ? $api->request('GET', 'dashboard/templates/'.rawurlencode($templateId)) : null;
     }
 
-    private function dashboardPrompt(string $prompt, ?array $template): string
+    private function dashboardPrompt(?array $template, string $perspective = 'business'): string
     {
         if (! $template) {
-            return $prompt;
+            abort(422, 'Select an available dashboard template.');
         }
         $widgets = array_map(fn ($widget) => [
             'type' => $widget['type'] ?? null,
             'title' => $widget['title'] ?? null,
         ], is_array($template['widgets'] ?? null) ? $template['widgets'] : []);
 
-        return 'Use this approved dashboard template as layout guidance, while using only tools and fields available in verified results. Template: '
+        $audience = $perspective === 'technical'
+            ? 'Build for a technical audience. Prefer concise dataset and model provenance, source coverage, fields, operations, and accurately labeled analytical outputs. Avoid unsupported performance claims.'
+            : 'Build for producers and business decision makers. Use plain language, surface the main historical revenue patterns, and make the insight useful for planning without technical jargon.';
+
+        return $audience.' Use this dashboard template as layout guidance, while using only tools and fields available in verified results. Template: '
             .($template['title'] ?? 'Movie dashboard').'. Description: '.($template['description'] ?? '').'. Suggested widgets: '
-            .json_encode($widgets, JSON_UNESCAPED_SLASHES)."\nUser request: ".mb_substr($prompt, 0, 3000);
+            .json_encode($widgets, JSON_UNESCAPED_SLASHES);
     }
 
     private function storeDraft(
@@ -342,6 +365,8 @@ class MovieDashboardController extends Controller
         ?array $scenarioContext = null,
         ?string $templateId = null,
         ?MovieDashboard $existing = null,
+        string $perspective = 'business',
+        ?string $insight = null,
     ): array
     {
         if (! is_array($spec) || ($spec['domain'] ?? null) !== 'movie' || ! is_string($spec['title'] ?? null)
@@ -446,6 +471,8 @@ class MovieDashboardController extends Controller
             'request_prompt' => $requestPrompt,
             'scenario_context' => $this->scenarioContext($scenarioContext),
             'template_id' => $templateId,
+            'perspective' => $perspective,
+            'insight' => $insight,
         ];
         if ($existing) {
             $existing->update($attributes);

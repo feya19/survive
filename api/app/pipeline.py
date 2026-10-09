@@ -18,10 +18,27 @@ from .db import DatasetMapping, DatasetVersion, ModelVersion, ModelDeployment, n
 from .ml.genres import MultiHotGenreEncoder, canonical_genre, parse_genres
 
 LOG = logging.getLogger(__name__)
-FIELDS = {"budget": "float", "genre": "string", "planned_duration": "float", "release_date": "date", "marketing_budget": "float", "revenue": "float", "audience": "float"}
-ALIASES = {"budget": ["production_cost", "movie_budget", "film_cost", "budget_usd", "budgetusd"], "genre": ["category", "film_genre", "film_category"], "planned_duration": ["production_days", "shooting_days"], "release_date": ["releasedate"], "marketing_budget": ["marketing_spend"], "revenue": ["box_office", "box_office_income", "worldwide_gross", "total_gross", "global_boxoffice_usd", "global_box_office_usd", "global_boxofficeusd"], "audience": ["viewers", "ticket_sales"]}
+MOVIE_FIELDS = {"budget": "float", "genre": "string", "planned_duration": "float", "release_date": "date", "marketing_budget": "float", "revenue": "float", "audience": "float"}
+MOVIE_ALIASES = {"budget": ["production_cost", "movie_budget", "film_cost", "budget_usd", "budgetusd"], "genre": ["category", "film_genre", "film_category"], "planned_duration": ["production_days", "shooting_days"], "release_date": ["releasedate"], "marketing_budget": ["marketing_spend"], "revenue": ["box_office", "box_office_income", "worldwide_gross", "total_gross", "global_boxoffice_usd", "global_box_office_usd", "global_boxofficeusd"], "audience": ["viewers", "ticket_sales"]}
+ADVERTISING_FIELDS = {"ad_spend": "float", "date": "date", "platform": "string", "campaign_type": "string", "industry": "string", "country": "string", "revenue": "float"}
+ADVERTISING_ALIASES = {"ad_spend": ["spend", "media_spend", "advertising_spend", "budget"], "date": ["campaign_date", "start_date"], "platform": ["channel", "ad_platform"], "campaign_type": ["campaign", "objective", "ad_type"], "industry": ["vertical", "sector"], "country": ["market", "region"], "revenue": ["sales", "campaign_revenue", "return"]}
+FIELDS_BY_DOMAIN = {"movie": MOVIE_FIELDS, "advertising": ADVERTISING_FIELDS}
+ALIASES_BY_DOMAIN = {"movie": MOVIE_ALIASES, "advertising": ADVERTISING_ALIASES}
+MAPPABLE_FIELDS_BY_DOMAIN = {
+    "movie": {field: kind for field, kind in MOVIE_FIELDS.items() if field not in {"planned_duration", "marketing_budget"}},
+    "advertising": ADVERTISING_FIELDS,
+}
+MAPPABLE_ALIASES_BY_DOMAIN = {
+    domain: {field: aliases for field, aliases in ALIASES_BY_DOMAIN[domain].items() if field in MAPPABLE_FIELDS_BY_DOMAIN[domain]}
+    for domain in FIELDS_BY_DOMAIN
+}
+REQUIRED_BY_DOMAIN = {"movie": {"revenue", "budget", "genre"}, "advertising": set(ADVERTISING_FIELDS)}
+FIELDS = MOVIE_FIELDS
+ALIASES = MOVIE_ALIASES
 OPERATIONS = {"none", "numeric", "date", "categorical", "exclude"}
-FEATURES = ["budget", "genre", "planned_duration", "marketing_budget"]
+FEATURES = ["budget", "genre"]
+LEGACY_MOVIE_FEATURES = ["budget", "genre", "planned_duration", "marketing_budget"]
+ADVERTISING_FEATURES = ["ad_spend", "date", "platform", "campaign_type", "industry", "country"]
 
 
 class MovieInputError(ValueError):
@@ -101,34 +118,38 @@ class MappingResult(BaseModel):
     warnings: list[str]
 
 
-def suggest(columns: list[dict]) -> dict:
+def suggest(columns: list[dict], domain: str = "movie") -> dict:
+    fields = MAPPABLE_FIELDS_BY_DOMAIN.get(domain)
+    aliases = MAPPABLE_ALIASES_BY_DOMAIN.get(domain)
+    if fields is None or aliases is None:
+        raise ValueError("Unsupported dataset domain")
     sources = [c["name"] for c in columns]
     used = set()
     matches = []
     ambiguous = []
     for source in sources:
         key = normalize(source)
-        target = next((f for f in FIELDS if key == f), None)
+        target = next((f for f in fields if key == f), None)
         score = .99 if target else 0
         if not target:
-            target = next((f for f, aliases in ALIASES.items() if key in aliases), None)
+            target = next((f for f, candidates in aliases.items() if key in candidates), None)
             score = .93 if target else 0
         if not target:
-            ranked = sorted(((SequenceMatcher(None, key, alias).ratio(), f) for f in FIELDS for alias in [f, *ALIASES.get(f, [])]), reverse=True)
+            ranked = sorted(((SequenceMatcher(None, key, alias).ratio(), f) for f in fields for alias in [f, *aliases.get(f, [])]), reverse=True)
             if ranked and ranked[0][0] >= .82:
                 score, target = ranked[0]
                 score = min(score, .85)
         if target and target not in used:
             used.add(target)
-            matches.append(Suggestion(source_column=source, target_column=target, confidence=score, reason="Deterministic name match", transformation="numeric" if FIELDS[target] == "float" else "date" if FIELDS[target] == "date" else "categorical", requires_review=score < .9).model_dump())
+            matches.append(Suggestion(source_column=source, target_column=target, confidence=score, reason="Deterministic name match", transformation="numeric" if fields[target] == "float" else "date" if fields[target] == "date" else "categorical", requires_review=score < .9).model_dump())
         else:
             ambiguous.append(source)
     warnings = []
     if ambiguous and settings().openrouter_api_key:
         try:
-            result = ai_suggest([c for c in columns if c["name"] in ambiguous], used)
+            result = ai_suggest([c for c in columns if c["name"] in ambiguous], used, fields)
             for item in result.mappings:
-                if item.source_column not in ambiguous or item.target_column not in FIELDS or item.target_column in used or item.transformation not in OPERATIONS:
+                if item.source_column not in ambiguous or item.target_column not in fields or item.target_column in used or item.transformation not in OPERATIONS:
                     warnings.append("Ignored invalid AI suggestion")
                     continue
                 used.add(item.target_column)
@@ -140,46 +161,61 @@ def suggest(columns: list[dict]) -> dict:
     return MappingResult(mappings=matches, unmapped_columns=ambiguous, warnings=warnings).model_dump()
 
 
-def ai_suggest(columns: list[dict], used: set[str]) -> MappingResult:
-    payload = {"columns": [{"name": c["name"], "dtype": c["dtype"]} for c in columns], "canonical_fields": {k: v for k, v in FIELDS.items() if k not in used}, "allowed_transformations": sorted(OPERATIONS)}
+def ai_suggest(columns: list[dict], used: set[str], fields: dict | None = None) -> MappingResult:
+    fields = fields or FIELDS
+    payload = {"columns": [{"name": c["name"], "dtype": c["dtype"]} for c in columns], "canonical_fields": {k: v for k, v in fields.items() if k not in used}, "allowed_transformations": sorted(OPERATIONS)}
     return InstructorClient().json_completion(payload, MappingResult)
 
 
-def validate_mapping(mapping: dict, source_columns: list[str]) -> None:
+def validate_mapping(mapping: dict, source_columns: list[str], domain: str = "movie", allow_legacy_movie_fields: bool = False) -> None:
+    fields = FIELDS_BY_DOMAIN.get(domain) if domain == "movie" and allow_legacy_movie_fields else MAPPABLE_FIELDS_BY_DOMAIN.get(domain)
+    if fields is None:
+        raise ValueError("Unsupported dataset domain")
     seen_sources, seen_targets = set(), set()
     for item in mapping.get("mappings", []):
         source, target = item.get("source_column"), item.get("target_column")
-        if source not in source_columns or source in seen_sources or target not in FIELDS or target in seen_targets or item.get("transformation", "none") not in OPERATIONS:
+        if source not in source_columns or source in seen_sources or target not in fields or target in seen_targets or item.get("transformation", "none") not in OPERATIONS:
             raise ValueError("Invalid, duplicate, or conflicting mapping")
         seen_sources.add(source)
         seen_targets.add(target)
 
 
-def standardize(path: Path, mapping: dict, output: Path) -> dict:
+def standardize(path: Path, mapping: dict, output: Path, domain: str = "movie") -> dict:
+    fields = FIELDS_BY_DOMAIN.get(domain)
+    required = REQUIRED_BY_DOMAIN.get(domain)
+    if fields is None or required is None:
+        raise ValueError("Unsupported dataset domain")
     df = read_dataset(path)
-    validate_mapping(mapping, list(df.columns))
+    # Previously saved mappings may still contain these fields. Keep those
+    # datasets readable while new mappings cannot select them.
+    validate_mapping(mapping, list(df.columns), domain, allow_legacy_movie_fields=True)
     rename = {m["source_column"]: m["target_column"] for m in mapping["mappings"] if m.get("transformation") != "exclude"}
     df = df[list(rename)].rename(columns=rename)
-    required = {"revenue", "budget", "genre"}
     if not required.issubset(df.columns):
         raise ValueError(f"Missing required fields: {sorted(required - set(df.columns))}")
     for field in df.columns:
-        if FIELDS[field] == "float":
+        if fields[field] == "float":
             df[field] = pd.to_numeric(df[field], errors="coerce")
-            if field in {"revenue", "budget", "planned_duration", "marketing_budget"} and (df[field].dropna() < 0).any():
+            if field in {"revenue", "budget", "planned_duration", "marketing_budget", "ad_spend"} and (df[field].dropna() < 0).any():
                 raise ValueError(f"Negative values in {field}")
-        elif FIELDS[field] == "date":
+        elif fields[field] == "date":
             df[field] = pd.to_datetime(df[field], errors="coerce").dt.strftime("%Y-%m-%d")
         else:
             df[field] = df[field].astype("string").str.strip()
-    schema_columns = {field: pa.Column(float, nullable=True, coerce=True) for field in ("revenue", "budget", "planned_duration", "marketing_budget") if field in df}
-    schema_columns["genre"] = pa.Column(str, nullable=True, coerce=True)
+    schema_columns = {field: pa.Column(float, nullable=True, coerce=True) for field, kind in fields.items() if kind == "float" and field in df}
+    for field, kind in fields.items():
+        if kind == "string" and field in df:
+            schema_columns[field] = pa.Column(str, nullable=True, coerce=True)
     schema = pa.DataFrameSchema(schema_columns, strict=False)
     schema.validate(df, lazy=True)
-    invalid = df[list(required)].isna().any(axis=1) | (df["genre"] == "") | df.duplicated()
+    invalid = df[list(required)].isna().any(axis=1) | df.duplicated()
+    for field, kind in fields.items():
+        if kind == "string" and field in required:
+            invalid |= df[field] == ""
     clean = df.loc[~invalid].copy()
-    if len(clean) < 10:
-        raise ValueError("At least 10 valid rows required after cleaning")
+    minimum = 30 if domain == "advertising" else 10
+    if len(clean) < minimum:
+        raise ValueError(f"At least {minimum} valid rows required after cleaning")
     output.parent.mkdir(parents=True, exist_ok=True)
     clean.to_csv(output, index=False)
     return {"valid_rows": len(clean), "invalid_rows": int(invalid.sum()), "errors": [], "warnings": [f"{int(invalid.sum())} rows excluded by required-field/duplicate rule"] if invalid.any() else []}
@@ -193,11 +229,28 @@ def verify_model(model: ModelVersion) -> tuple[object, dict]:
     if digest(model_path) != model.artifact_checksum:
         raise ValueError("Artifact checksum mismatch")
     manifest = json.loads(manifest_path.read_text())
-    if manifest != model.manifest or manifest.get("model_type") != model.model_type or manifest.get("output_type") != "point_prediction" or not set(manifest.get("feature_columns", [])).issubset(FEATURES) or not {"budget", "genre"}.issubset(manifest.get("feature_columns", [])):
+    family_contracts = {
+        "lgbm_revenue": (set(LEGACY_MOVIE_FEATURES), {"budget", "genre"}),
+        "lgbm_advertising_revenue": (set(ADVERTISING_FEATURES), set(ADVERTISING_FEATURES)),
+    }
+    allowed, required = family_contracts.get(model.model_type, (set(), set()))
+    feature_columns = set(manifest.get("feature_columns", []))
+    if manifest != model.manifest or manifest.get("model_type") != model.model_type or manifest.get("output_type") != "point_prediction" or not feature_columns.issubset(allowed) or not required.issubset(feature_columns):
         raise ValueError("Inference contract mismatch")
     if manifest.get("currency") not in (None, "USD"):
         raise ValueError("Movie model currency contract must be USD")
     pipeline = joblib.load(model_path)
+    if model.model_type == "lgbm_advertising_revenue":
+        categories = manifest.get("categories") or {}
+        sample = pd.DataFrame([{
+            "ad_spend": 1000.0,
+            "date": manifest.get("training_date_max", "2024-01-01"),
+            **{field: (categories.get(field) or ["Unknown"])[0] for field in ("platform", "campaign_type", "industry", "country")},
+        }])
+        value = float(pipeline.predict(sample)[0])
+        if not math.isfinite(value):
+            raise ValueError("Smoke test returned invalid prediction")
+        return pipeline, manifest
     vocabulary = genre_vocabulary(pipeline, manifest)
     if manifest.get("supports_multiple_genres"):
         encoder = pipeline.named_steps["preprocessor"].named_transformers_.get("genre")
@@ -304,8 +357,7 @@ def predict_movie_revenue(db: Session, values: dict, expected_model_version: str
         "model_type": model.model_type,
         "prediction_type": "point",
         "currency": currency,
-        "inputs": {"budget": float(values["budget"]), "genres": genres, "currency": currency,
-                   "planned_duration": values.get("planned_duration"), "marketing_budget": values.get("marketing_budget")},
+        "inputs": {"budget": float(values["budget"]), "genres": genres, "currency": currency},
         "prediction": {"revenue": value},
         "assumptions": [],
         "warnings": ["This model returns a point prediction, not an uncertainty interval."],
@@ -326,9 +378,6 @@ def active_movie_model_metadata(db: Session) -> dict:
         "genres": {"type": "multi_categorical" if supports_multiple else "categorical", "required": True,
                    "multiple": supports_multiple, "options": vocabulary},
     }
-    for field in ("planned_duration", "marketing_budget"):
-        if field in feature_columns:
-            features[field] = {"type": "number", "required": False, "minimum": 0}
     return {
         "model_version": model.id,
         "domain": "movie",
