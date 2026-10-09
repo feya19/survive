@@ -1,12 +1,15 @@
 import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { Eye, EyeOff, ArrowRight, Lock, Mail } from 'lucide-react';
 
 export default function Login({ status, canResetPassword }) {
+    const [showPassword, setShowPassword] = useState(false);
+
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -23,76 +26,128 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout>
-            <Head title="Log in" />
+            <Head title="Masuk — Survive" />
+
+            {/* Card Header */}
+            <div className="mb-6">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#edf4e5] px-2.5 py-0.5 rounded-full border border-[#d2e4c2] inline-block mb-2">
+                    Portal Produser
+                </span>
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#112316]">
+                    Masuk ke Studio
+                </h1>
+                <p className="text-xs text-gray-500 mt-1">
+                    Akses pemodelan skenario dan analisis anggaran produksi Anda.
+                </p>
+            </div>
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mb-5 text-xs font-semibold text-[#244b20] bg-[#edf4e5] border border-[#d2e4c2] rounded-xl p-3">
                     {status}
                 </div>
             )}
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} className="space-y-4">
+                {/* Email Address */}
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
+                    <InputLabel htmlFor="email" value="Email Studio" />
+                    <div className="relative">
+                        <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                        <TextInput
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            className="block w-full pl-10 pr-4 py-2.5"
+                            autoComplete="username"
+                            isFocused={true}
+                            placeholder="nama@studio.com"
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                        />
+                    </div>
+                    <InputError message={errors.email} className="mt-1.5" />
                 </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
+                {/* Password */}
+                <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                        <InputLabel htmlFor="password" value="Kata Sandi" className="mb-0" />
+                        {canResetPassword && (
+                            <Link
+                                href={route('password.request')}
+                                className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 transition-colors"
+                            >
+                                Lupa kata sandi?
+                            </Link>
+                        )}
+                    </div>
+                    <div className="relative">
+                        <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                        <TextInput
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            value={data.password}
+                            className="block w-full pl-10 pr-10 py-2.5"
+                            autoComplete="current-password"
+                            placeholder="••••••••••••"
+                            onChange={(e) => setData('password', e.target.value)}
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3.5 top-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                            aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                        >
+                            {showPassword ? (
+                                <EyeOff className="w-4 h-4" />
+                            ) : (
+                                <Eye className="w-4 h-4" />
+                            )}
+                        </button>
+                    </div>
+                    <InputError message={errors.password} className="mt-1.5" />
                 </div>
 
-                <div className="mt-4 block">
-                    <label className="flex items-center">
+                {/* Remember Me */}
+                <div className="pt-1">
+                    <label className="flex items-center space-x-2.5 cursor-pointer">
                         <Checkbox
                             name="remember"
                             checked={data.remember}
-                            onChange={(e) =>
-                                setData('remember', e.target.checked)
-                            }
+                            onChange={(e) => setData('remember', e.target.checked)}
                         />
-                        <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">
-                            Remember me
+                        <span className="text-xs font-medium text-gray-600">
+                            Ingat sesi masuk saya
                         </span>
                     </label>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
-                        >
-                            Forgot your password?
-                        </Link>
-                    )}
+                {/* Submit Button */}
+                <div className="pt-2">
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full py-3 rounded-xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-semibold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center space-x-2 disabled:opacity-60"
+                    >
+                        <span>Masuk ke Studio</span>
+                        <ArrowRight className="w-4 h-4 text-[#9de062]" />
+                    </button>
+                </div>
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
+                {/* Bottom Register Prompt */}
+                <div className="pt-4 border-t border-[#edf0ea] text-center">
+                    <p className="text-xs text-gray-500">
+                        Belum memiliki akun produser?{' '}
+                        <Link
+                            href={route('register')}
+                            className="font-bold text-[#14281c] hover:underline"
+                        >
+                            Daftar di sini
+                        </Link>
+                    </p>
                 </div>
             </form>
         </GuestLayout>
