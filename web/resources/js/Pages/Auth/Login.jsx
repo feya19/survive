@@ -26,15 +26,15 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout>
-            <Head title="Masuk — Survive" />
+            <Head title="Sign In — Survive" />
 
             {/* Card Header */}
             <div className="mb-6">
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#112316]">
-                    Masuk ke Studio
+                    Sign in to the Studio
                 </h1>
                 <p className="text-xs text-gray-500 mt-1">
-                    Akses pemodelan skenario dan analisis anggaran produksi Anda.
+                    Access your scenario modeling and production budget analysis.
                 </p>
             </div>
 
@@ -69,13 +69,13 @@ export default function Login({ status, canResetPassword }) {
                 {/* Password */}
                 <div>
                     <div className="flex items-center justify-between mb-1.5">
-                        <InputLabel htmlFor="password" value="Kata Sandi" className="mb-0" />
+                        <InputLabel htmlFor="password" value="Password" className="mb-0" />
                         {canResetPassword && (
                             <Link
                                 href={route('password.request')}
                                 className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 transition-colors"
                             >
-                                Lupa kata sandi?
+                                Forgot password?
                             </Link>
                         )}
                     </div>
@@ -96,7 +96,7 @@ export default function Login({ status, canResetPassword }) {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3.5 top-3 text-gray-400 hover:text-gray-600 focus:outline-none"
-                            aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
                         >
                             {showPassword ? (
                                 <EyeOff className="w-4 h-4" />
@@ -117,7 +117,7 @@ export default function Login({ status, canResetPassword }) {
                             onChange={(e) => setData('remember', e.target.checked)}
                         />
                         <span className="text-xs font-medium text-gray-600">
-                            Ingat sesi masuk saya
+                            Remember me
                         </span>
                     </label>
                 </div>
@@ -129,7 +129,7 @@ export default function Login({ status, canResetPassword }) {
                         disabled={processing}
                         className="w-full py-3 rounded-xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-semibold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center space-x-2 disabled:opacity-60"
                     >
-                        <span>Masuk ke Studio</span>
+                        <span>Sign in to the Studio</span>
                         <ArrowRight className="w-4 h-4 text-[#9de062]" />
                     </button>
                 </div>
@@ -137,12 +137,12 @@ export default function Login({ status, canResetPassword }) {
                 {/* Bottom Register Prompt */}
                 <div className="pt-4 border-t border-[#edf0ea] text-center">
                     <p className="text-xs text-gray-500">
-                        Belum memiliki akun produser?{' '}
+                        Don’t have a producer account?{' '}
                         <Link
                             href={route('register')}
                             className="font-bold text-[#14281c] hover:underline"
                         >
-                            Daftar di sini
+                            Register here
                         </Link>
                     </p>
                 </div>

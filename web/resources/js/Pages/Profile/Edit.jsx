@@ -42,7 +42,36 @@ export default function Edit({ mustVerifyEmail, status }) {
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto">
 
-                <div className="w-full px-6 py-8 sm:px-8 lg:px-10">
+                        <span className="h-4 w-px bg-[#d8dcd0] hidden sm:block"></span>
+
+                        <Link
+                            href="/dashboard"
+                            className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold text-gray-600 hover:text-[#112316] transition-colors"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                            <span>Back to dashboard</span>
+                        </Link>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                        <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-600 font-medium">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span className="text-[11px] font-semibold text-emerald-800 bg-[#e7f6d9] px-2.5 py-0.5 rounded-full border border-[#cde8b4]">
+                                Active producer
+                            </span>
+                        </div>
+
+                        <button
+                            onClick={handleLogout}
+                            className="px-3 py-1.5 rounded-lg border border-[#d2d7cb] bg-white hover:bg-rose-50 text-xs font-semibold text-rose-600 flex items-center space-x-1.5 shadow-2xs transition-all"
+                        >
+                            <LogOut className="w-3.5 h-3.5" />
+                            <span>Sign out</span>
+                        </button>
+                    </div>
+                </header>
+
+                <div className="px-4 sm:px-8 py-8 max-w-6xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         {/* Left Column: Profile Card */}
                         <div className="lg:col-span-4">

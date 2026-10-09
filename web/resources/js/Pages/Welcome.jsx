@@ -26,131 +26,131 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeDemoTab, setActiveDemoTab] = useState('movie');
 
-    // Data simulasi interaktif yang mencerminkan model pembelajaran mesin dan fitur riil aplikasi
+    // Interactive demo data reflecting the app's machine learning models and features.
     const demoTabs = {
         movie: {
             id: 'movie',
-            tabTitle: 'Prediksi Film (LightGBM)',
-            domainBadge: 'Domain: Produksi Film & Bioskop',
-            headline: 'Pemodelan Pendapatan Film Berbasis Pembelajaran Mesin',
-            inputSummary: 'Anggaran: $25,0 Juta • Genre: Fiksi Ilmiah & Aksi • Durasi: 120 Menit • Pemasaran: $8,0 Juta',
+            tabTitle: 'Movie Prediction (LightGBM)',
+            domainBadge: 'Domain: Film Production & Box Office',
+            headline: 'Machine Learning for Movie Revenue Modeling',
+            inputSummary: 'Production budget: $25.0M • Genres: Science Fiction & Action',
             kpis: [
                 {
-                    label: 'Prediksi Pendapatan Bioskop',
-                    value: '$68,4 Juta',
-                    subtext: 'Estimasi pendapatan kotor',
+                    label: 'Estimated Box Office Revenue',
+                    value: '$68.4M',
+                    subtext: 'Estimated gross revenue',
                     color: 'text-[#112316]',
                 },
                 {
-                    label: 'Proyeksi ROI Studio',
-                    value: '2,74×',
-                    subtext: 'Rasio pendapatan terhadap anggaran',
+                    label: 'Projected Studio ROI',
+                    value: '2.74×',
+                    subtext: 'Revenue-to-budget ratio',
                     color: 'text-[#1b4e23]',
                 },
                 {
-                    label: 'Versi Model Aktif',
+                    label: 'Active Model Version',
                     value: 'v1.4.0 (LGBM)',
-                    subtext: 'Dilatih dari 45.000+ data film',
+                    subtext: 'Trained on 45,000+ movie records',
                     color: 'text-gray-800',
                 },
                 {
-                    label: 'Status Validasi Data',
-                    value: '100% Terverifikasi',
-                    subtext: 'Dataset telah terstandardisasi',
+                    label: 'Data Validation Status',
+                    value: '100% Verified',
+                    subtext: 'Dataset has been standardized',
                     color: 'text-emerald-800',
                 },
             ],
-            barsTitle: 'Perbandingan Historis Pendapatan Berdasarkan Genre Film',
+            barsTitle: 'Historical Revenue Comparison by Movie Genre',
             bars: [
-                { label: 'Fiksi Ilmiah & Aksi (Kombinasi Pilihan)', value: '$68,4 Juta', percent: 85, highlight: true },
-                { label: 'Aksi Murni', value: '$52,1 Juta', percent: 65, highlight: false },
-                { label: 'Fiksi Ilmiah Tunggal', value: '$46,8 Juta', percent: 58, highlight: false },
-                { label: 'Drama & Cerita Seru Rata-Rata', value: '$29,3 Juta', percent: 36, highlight: false },
+                { label: 'Science Fiction & Action (Selected)', value: '$68.4M', percent: 85, highlight: true },
+                { label: 'Action', value: '$52.1M', percent: 65, highlight: false },
+                { label: 'Science Fiction', value: '$46.8M', percent: 58, highlight: false },
+                { label: 'Drama & Thriller Average', value: '$29.3M', percent: 36, highlight: false },
             ],
-            provenance: 'Model: movie_lgbm_models.joblib • Validasi: Teruji pada data historis bioskop',
-            ctaText: 'Coba Prediksi Film di Studio',
+            provenance: 'Model: movie_lgbm_models.joblib • Validation: Evaluated against historical box office data',
+            ctaText: 'Try Movie Prediction in the Studio',
         },
         advertising: {
             id: 'advertising',
-            tabTitle: 'Ruang Kerja Periklanan',
-            domainBadge: 'Domain: Kampanye & Belanja Iklan',
-            headline: 'Optimalisasi Belanja Media & Proyeksi Pendapatan Multikanal',
-            inputSummary: 'Total Belanja Iklan: $5,0 Juta • Saluran: Video Daring & Pencarian • Industri: Hiburan',
+            tabTitle: 'Advertising Workspace',
+            domainBadge: 'Domain: Campaigns & Ad Spend',
+            headline: 'Media Spend Planning & Multi-Channel Revenue Estimates',
+            inputSummary: 'Ad spend: $5.0M • Platform: Online Video • Campaign: Awareness • Industry: Entertainment • Country: United States',
             kpis: [
                 {
-                    label: 'Estimasi Pendapatan Iklan',
-                    value: '$14,2 Juta',
-                    subtext: 'Proyeksi hasil kampanye',
+                    label: 'Estimated Advertising Revenue',
+                    value: '$14.2M',
+                    subtext: 'Projected campaign outcome',
                     color: 'text-[#112316]',
                 },
                 {
-                    label: 'Target Imbal Hasil (ROAS)',
-                    value: '2,84×',
-                    subtext: 'Pengembalian biaya belanja iklan',
+                    label: 'Target Return on Ad Spend (ROAS)',
+                    value: '2.84×',
+                    subtext: 'Return relative to advertising spend',
                     color: 'text-[#1b4e23]',
                 },
                 {
-                    label: 'Model Periklanan',
-                    value: 'Regresi LGBM',
-                    subtext: 'Model bauran fitur saluran',
+                    label: 'Advertising Model',
+                    value: 'LightGBM Regression',
+                    subtext: 'Model using campaign features',
                     color: 'text-gray-800',
                 },
                 {
-                    label: 'Saluran Kinerja Tertinggi',
-                    value: 'Video (Porsi 62%)',
-                    subtext: 'Saluran dengan kontribusi terbesar',
+                    label: 'Top-Performing Channel',
+                    value: 'Video (62% share)',
+                    subtext: 'Channel with the largest contribution',
                     color: 'text-emerald-800',
                 },
             ],
-            barsTitle: 'Estimasi Pendapatan Berdasarkan Saluran Pemasaran',
+            barsTitle: 'Estimated Revenue by Marketing Channel',
             bars: [
-                { label: 'Video Daring (Penstriman & YouTube)', value: '$8,8 Juta', percent: 88, highlight: true },
-                { label: 'Media Sosial & Mitra Konten', value: '$3,4 Juta', percent: 52, highlight: false },
-                { label: 'Iklan Mesin Pencari & Kinerja', value: '$2,0 Juta', percent: 34, highlight: false },
+                { label: 'Online Video (Streaming & YouTube)', value: '$8.8M', percent: 88, highlight: true },
+                { label: 'Social Media & Content Partners', value: '$3.4M', percent: 52, highlight: false },
+                { label: 'Search & Performance Ads', value: '$2.0M', percent: 34, highlight: false },
             ],
             provenance: 'Model: lightgbm_advertising_revenue.joblib • Dataset: global_ads_performance_dataset.csv',
-            ctaText: 'Buka Ruang Kerja Periklanan',
+            ctaText: 'Open Advertising Workspace',
         },
         workbench: {
             id: 'workbench',
-            tabTitle: 'Pengelolaan Data & Asisten AI',
-            domainBadge: 'Alat Penyerapan Data & Asisten AI',
-            headline: 'Alur Otomatisasi Dataset & Pembuatan Dasbor Cepat',
-            inputSummary: 'Format Berkas: CSV & XLSX • Pemetaan Skema Otomatis • Pembuatan Komponen Cerdas',
+            tabTitle: 'Data Workbench',
+            domainBadge: 'Upload, map, validate, and train',
+            headline: 'Dataset Preparation & Dashboard Generation',
+            inputSummary: 'File formats: CSV & XLSX • Suggested column mapping • Validated analytics',
             kpis: [
                 {
-                    label: 'Format Berkas Didukung',
+                    label: 'Supported File Formats',
                     value: 'CSV & XLSX',
-                    subtext: 'Pemeriksaan dan validasi kolom',
+                    subtext: 'Column checks and validation',
                     color: 'text-[#112316]',
                 },
                 {
-                    label: 'Pemetaan Kolom',
-                    value: 'Saran Otomatis',
-                    subtext: 'Deteksi otomatis anggaran dan genre',
+                    label: 'Column Mapping',
+                    value: 'Suggested mappings',
+                    subtext: 'Automatic detection of budget and genre fields',
                     color: 'text-[#1b4e23]',
                 },
                 {
-                    label: 'Asisten AI Studio',
-                    value: 'Bahasa Alami',
-                    subtext: 'Eksekusi kueri analitik langsung',
+                    label: 'Validated Data Insights',
+                    value: 'Evidence-based',
+                    subtext: 'Generated from verified analytics',
                     color: 'text-gray-800',
                 },
                 {
-                    label: 'Pembuatan Dasbor',
-                    value: 'Otomatis',
-                    subtext: 'Komponen KPI, diagram batang, dan tabel',
+                    label: 'Dashboard Generation',
+                    value: 'Automated',
+                    subtext: 'KPI cards, bar charts, and tables',
                     color: 'text-emerald-800',
                 },
             ],
-            barsTitle: 'Tahapan Pemrosesan Data pada Meja Kerja (Workbench)',
+            barsTitle: 'Workbench Data Processing Steps',
             bars: [
-                { label: '1. Pengunggahan Berkas (CSV & XLSX)', value: '100% Selesai', percent: 100, highlight: false },
-                { label: '2. Pemindaian Profil & Pemetaan Kolom', value: '100% Tervalidasi', percent: 100, highlight: false },
-                { label: '3. Standardisasi Data untuk Model Analitik', value: 'Siap Dianalisis', percent: 100, highlight: true },
+                { label: '1. Upload files (CSV & XLSX)', value: '100% complete', percent: 100, highlight: false },
+                { label: '2. Profile data & map columns', value: '100% validated', percent: 100, highlight: false },
+                { label: '3. Standardize data for analytics', value: 'Ready for analysis', percent: 100, highlight: true },
             ],
-            provenance: 'Alur Kerja: Pengunggahan → Validasi → Standardisasi Data → Pelatihan & Penerapan Model',
-            ctaText: 'Jelajahi Pengelolaan Berkas',
+            provenance: 'Workflow: Upload → Validation → Data standardization → Model training & deployment',
+            ctaText: 'Explore Data Management',
         },
     };
 
@@ -158,20 +158,20 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
 
     return (
         <div className="min-h-screen bg-[#f3f4ef] text-[#112316] font-sans antialiased selection:bg-[#c2e78c] selection:text-[#102414] relative overflow-x-hidden">
-            <Head title="SURVIVE — Ruang Kerja Keputusan Studio Film & Media" />
+            <Head title="SURVIVE — Film & Media Studio Decision Workspace" />
 
-            {/* Pendaran cahaya latar belakang selaras dengan halaman Masuk */}
+            {/* Background glow coordinated with the sign-in page */}
             <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[380px] bg-[#9de062]/20 blur-3xl rounded-full pointer-events-none -z-0" />
             <div className="absolute top-[800px] -right-40 w-[600px] h-[400px] bg-[#9de062]/10 blur-3xl rounded-full pointer-events-none -z-0" />
             <div className="absolute top-[1800px] -left-40 w-[600px] h-[400px] bg-[#9de062]/10 blur-3xl rounded-full pointer-events-none -z-0" />
 
             {/* ─────────────────────────────────────────────────────────
-                BILAH NAVIGASI
+                NAVIGATION BAR
             ────────────────────────────────────────────────────────── */}
             <header className="sticky top-0 z-50 bg-[#f3f4ef]/85 backdrop-blur-md border-b border-[#e2e7dc]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
-                        {/* Logo dan Identitas Jenama */}
+                        {/* Logo and brand identity */}
                         <Link href="/" className="inline-flex items-center space-x-3 group">
                             <div className="w-11 h-11 rounded-2xl bg-[#9de062] flex items-center justify-center text-[#102414] font-black text-lg shadow-sm group-hover:scale-105 transition-transform shrink-0">
                                 S
@@ -181,38 +181,38 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                     SURVIVE STUDIO
                                 </span>
                                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#2d5822] block mt-1">
-                                    Ruang Kerja Studio
+                                    Studio Workspace
                                 </span>
                             </div>
                         </Link>
 
-                        {/* Tautan Navigasi Desktop */}
+                        {/* Desktop navigation links */}
                         <nav className="hidden md:flex items-center space-x-8 text-xs font-semibold text-gray-700">
                             <a href="#fitur" className="hover:text-[#14281c] transition-colors">
-                                Fitur Utama
+                                Features
                             </a>
                             <a href="#demo" className="hover:text-[#14281c] transition-colors">
-                                Simulasi Model
+                                Model Preview
                             </a>
                             <a href="#alur-kerja" className="hover:text-[#14281c] transition-colors">
-                                Alur Kerja
+                                Workflow
                             </a>
                             <a href="#keunggulan" className="hover:text-[#14281c] transition-colors">
-                                Keunggulan
+                                Advantages
                             </a>
                             <a href="#faq" className="hover:text-[#14281c] transition-colors">
-                                Tanya Jawab
+                                FAQ
                             </a>
                         </nav>
 
-                        {/* Tombol Akses Autentikasi */}
+                        {/* Account access buttons */}
                         <div className="hidden sm:flex items-center space-x-3">
                             {auth?.user ? (
                                 <Link
                                     href={route('dashboard')}
                                     className="px-4 py-2.5 rounded-xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-semibold text-xs transition-colors flex items-center space-x-2 shadow-xs"
                                 >
-                                    <span>Buka Studio</span>
+                                    <span>Open Studio</span>
                                     <ArrowRight className="w-3.5 h-3.5 text-[#9de062]" />
                                 </Link>
                             ) : (
@@ -222,7 +222,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                             href={route('login')}
                                             className="px-4 py-2 rounded-xl text-xs font-bold text-[#14281c] hover:bg-black/5 transition-colors"
                                         >
-                                            Masuk
+                                            Sign in
                                         </Link>
                                     )}
                                     {canRegister && (
@@ -230,7 +230,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                             href={route('register')}
                                             className="px-4 py-2.5 rounded-xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-semibold text-xs transition-colors flex items-center space-x-2 shadow-xs group"
                                         >
-                                            <span>Mulai Gratis</span>
+                                            <span>Get started for free</span>
                                             <ArrowRight className="w-3.5 h-3.5 text-[#9de062] group-hover:translate-x-0.5 transition-transform" />
                                         </Link>
                                     )}
@@ -238,13 +238,13 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                             )}
                         </div>
 
-                        {/* Tombol Menu Seluler */}
+                {/* Mobile menu button */}
                         <div className="flex md:hidden">
                             <button
                                 type="button"
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                                 className="p-2 rounded-xl text-gray-700 hover:text-black hover:bg-black/5"
-                                aria-label="Buka menu navigasi"
+                                aria-label="Open navigation menu"
                             >
                                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                             </button>
@@ -252,7 +252,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                     </div>
                 </div>
 
-                {/* Menu Tarik-Turun Seluler */}
+                {/* Mobile dropdown menu */}
                 {mobileMenuOpen && (
                     <div className="md:hidden bg-white border-b border-[#e2e7dc] px-4 pt-3 pb-6 space-y-3">
                         <a
@@ -260,35 +260,35 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                             onClick={() => setMobileMenuOpen(false)}
                             className="block px-3 py-2 text-sm font-semibold text-gray-800 rounded-lg hover:bg-[#f3f4ef]"
                         >
-                            Fitur Utama
+                            Features
                         </a>
                         <a
                             href="#demo"
                             onClick={() => setMobileMenuOpen(false)}
                             className="block px-3 py-2 text-sm font-semibold text-gray-800 rounded-lg hover:bg-[#f3f4ef]"
                         >
-                            Simulasi Model
+                            Model Preview
                         </a>
                         <a
                             href="#alur-kerja"
                             onClick={() => setMobileMenuOpen(false)}
                             className="block px-3 py-2 text-sm font-semibold text-gray-800 rounded-lg hover:bg-[#f3f4ef]"
                         >
-                            Alur Kerja
+                            Workflow
                         </a>
                         <a
                             href="#keunggulan"
                             onClick={() => setMobileMenuOpen(false)}
                             className="block px-3 py-2 text-sm font-semibold text-gray-800 rounded-lg hover:bg-[#f3f4ef]"
                         >
-                            Keunggulan
+                            Advantages
                         </a>
                         <a
                             href="#faq"
                             onClick={() => setMobileMenuOpen(false)}
                             className="block px-3 py-2 text-sm font-semibold text-gray-800 rounded-lg hover:bg-[#f3f4ef]"
                         >
-                            Tanya Jawab
+                            FAQ
                         </a>
 
                         <div className="pt-3 border-t border-gray-100 flex flex-col space-y-2">
@@ -297,7 +297,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                     href={route('dashboard')}
                                     className="w-full py-2.5 rounded-xl bg-[#14281c] text-white text-center font-semibold text-xs flex items-center justify-center space-x-2"
                                 >
-                                    <span>Buka Studio</span>
+                                    <span>Open Studio</span>
                                     <ArrowRight className="w-3.5 h-3.5 text-[#9de062]" />
                                 </Link>
                             ) : (
@@ -307,7 +307,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                             href={route('login')}
                                             className="w-full py-2.5 text-center text-xs font-bold text-[#14281c] border border-[#e2e7dc] rounded-xl hover:bg-gray-50"
                                         >
-                                            Masuk ke Studio
+                                            Sign in to the Studio
                                         </Link>
                                     )}
                                     {canRegister && (
@@ -315,7 +315,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                             href={route('register')}
                                             className="w-full py-2.5 rounded-xl bg-[#14281c] text-white text-center font-semibold text-xs flex items-center justify-center space-x-2"
                                         >
-                                            <span>Daftar Akun Baru</span>
+                                            <span>Create an account</span>
                                             <ArrowRight className="w-3.5 h-3.5 text-[#9de062]" />
                                         </Link>
                                     )}
@@ -327,35 +327,35 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
             </header>
 
             {/* ─────────────────────────────────────────────────────────
-                BAGIAN UTAMA (HERO SECTION)
+                HERO SECTION
             ────────────────────────────────────────────────────────── */}
             <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto">
-                        {/* Judul Utama */}
+                        {/* Main heading */}
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#112316] leading-[1.12]">
-                            Keputusan Produksi Film yang Terukur,{' '}
+                            Make Measurable Film Production Decisions,{' '}
                             <span className="relative inline-block">
                                 <span className="relative z-10 text-[#14281c] underline decoration-[#9de062] decoration-4 underline-offset-8">
-                                    Bukan Sekadar Firasat.
+                                    Beyond Gut Feeling.
                                 </span>
                             </span>
                         </h1>
 
-                        {/* Penjelasan Ringkas */}
+                        {/* Short introduction */}
                         <p className="mt-6 text-base sm:text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
-                            SURVIVE memadukan model pembelajaran mesin (LightGBM), analisis data historis,
-                            dan asisten AI interaktif untuk memproyeksikan potensi pendapatan film serta efektivitas belanja iklan secara objektif.
+                            SURVIVE combines machine learning models (LightGBM), historical data analysis, and validated insights
+                            to estimate movie revenue and advertising performance.
                         </p>
 
-                        {/* Tombol Ajakan Bertindak (CTA) */}
+                        {/* Call to action buttons */}
                         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
                             {auth?.user ? (
                                 <Link
                                     href={route('dashboard')}
                                     className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-bold text-sm shadow-lg shadow-emerald-950/15 flex items-center justify-center space-x-2.5 transition-all group"
                                 >
-                                    <span>Buka Studio</span>
+                                    <span>Open Studio</span>
                                     <ArrowRight className="w-4 h-4 text-[#9de062] group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             ) : (
@@ -364,43 +364,43 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                         href={route('register')}
                                         className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-bold text-sm shadow-lg shadow-emerald-950/15 flex items-center justify-center space-x-2.5 transition-all group"
                                     >
-                                        <span>Buka Akun Studio Gratis</span>
+                                        <span>Create a free Studio account</span>
                                         <ArrowRight className="w-4 h-4 text-[#9de062] group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                     <Link
                                         href={route('login')}
                                         className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white hover:bg-gray-50 text-[#112316] font-bold text-sm border border-[#e2e7dc] shadow-sm flex items-center justify-center space-x-2 transition-all"
                                     >
-                                        <span>Masuk ke Studio</span>
+                                        <span>Sign in to the Studio</span>
                                         <ArrowUpRight className="w-4 h-4 text-gray-400" />
                                     </Link>
                                 </>
                             )}
                         </div>
 
-                        {/* Poin Validasi Kredibilitas */}
+                        {/* Credibility points */}
                         <div className="mt-10 pt-8 border-t border-[#e2e7dc]/80 flex flex-wrap items-center justify-center gap-y-2 gap-x-6 text-xs text-gray-600 font-medium">
                             <div className="flex items-center space-x-1.5">
                                 <CheckCircle2 className="w-4 h-4 text-[#2d5822]" />
-                                <span>Model Pembelajaran Mesin Teruji (LightGBM)</span>
+                                <span>Validated machine learning model (LightGBM)</span>
                             </div>
                             <div className="flex items-center space-x-1.5">
                                 <CheckCircle2 className="w-4 h-4 text-[#2d5822]" />
-                                <span>Dua Domain: Film & Periklanan</span>
+                                <span>Two domains: Film & Advertising</span>
                             </div>
                             <div className="flex items-center space-x-1.5">
                                 <CheckCircle2 className="w-4 h-4 text-[#2d5822]" />
-                                <span>Rekam Jejak Data & Model Transparan</span>
+                                <span>Transparent data and model provenance</span>
                             </div>
                         </div>
                     </div>
 
                     {/* ─────────────────────────────────────────────────────────
-                        TAMPILAN ANTARMUKA ASLI (REAL APPLICATION SHOWCASE)
+                        LIVE APPLICATION PREVIEW
                     ────────────────────────────────────────────────────────── */}
                     <div className="mt-14 max-w-5xl mx-auto">
                         <div className="relative rounded-2xl sm:rounded-3xl p-2 sm:p-3 bg-gradient-to-b from-[#14281c] to-[#1a3424] border border-[#2b543b] shadow-2xl shadow-emerald-950/25">
-                            {/* Bilah Atas Jendela Studio */}
+                            {/* Studio window bar */}
                             <div className="px-4 py-3 flex items-center justify-between text-xs text-gray-300 border-b border-[#244b20]">
                                 <div className="flex items-center space-x-2">
                                     <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
@@ -412,30 +412,30 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                 </div>
                             </div>
 
-                            {/* Gambar Dasbor Asli */}
+                            {/* Dashboard image */}
                             <div className="rounded-xl sm:rounded-2xl overflow-hidden bg-[#112316] border border-[#2b543b]">
                                 <img
                                     src="/assets/dashboard.png"
-                                    alt="Antarmuka Dasbor SURVIVE Studio"
+                                    alt="SURVIVE Studio dashboard interface"
                                     className="w-full h-auto object-cover object-top block hover:scale-[1.01] transition-transform duration-500"
                                     loading="eager"
                                 />
                             </div>
 
-                            {/* Keterangan Fitur pada Gambar */}
+                            {/* Dashboard feature captions */}
                             <div className="px-4 py-3 bg-[#14281c]/90 rounded-b-xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-emerald-100/80">
                                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-6 gap-y-1.5">
                                     <div className="flex items-center space-x-2">
                                         <CheckCircle2 className="w-3.5 h-3.5 text-[#9de062]" />
-                                        <span>Prediksi Kampanye & Belanja Media</span>
+                                        <span>Campaign and media spend predictions</span>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <CheckCircle2 className="w-3.5 h-3.5 text-[#9de062]" />
-                                        <span>Wawasan Model Berdasarkan Data Historis</span>
+                                        <span>Model insights based on historical data</span>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <CheckCircle2 className="w-3.5 h-3.5 text-[#9de062]" />
-                                        <span>Generator Dasbor dari Dataset Tervalidasi</span>
+                                        <span>Dashboard generation from validated datasets</span>
                                     </div>
                                 </div>
                                 <span className="text-[11px] text-emerald-300 font-mono shrink-0">
@@ -448,78 +448,74 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
             </section>
 
             {/* ─────────────────────────────────────────────────────────
-                FITUR UTAMA
+                FEATURES
             ────────────────────────────────────────────────────────── */}
             <section id="fitur" className="py-20 bg-white border-y border-[#e2e7dc]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Judul Bagian */}
+                    {/* Section heading */}
                     <div className="text-center max-w-2xl mx-auto mb-16">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#edf4e5] px-3 py-1 rounded-full border border-[#d2e4c2] inline-block mb-3">
-                            Fitur Unggulan
+                            KEY FEATURES
                         </span>
                         <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#112316]">
-                            Arsitektur Analitik untuk Keputusan Produksi yang Tepat
+                            Analytics for Better Production Decisions
                         </h2>
                         <p className="text-sm sm:text-base text-gray-500 mt-3">
-                            Setiap fitur terhubung langsung dengan mesin pembelajaran mesin dan basis data internal SURVIVE.
+                            Each feature connects to SURVIVE’s machine learning models and data sources.
                         </p>
                     </div>
 
-                    {/* Kisi-Kisi Fitur */}
+                    {/* Feature grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {/* Fitur 1: Prediksi Pendapatan Film */}
+                        {/* Feature 1: Movie revenue prediction */}
                         <div className="bg-[#f9faf7] rounded-3xl p-7 border border-[#e2e7dc] hover:border-[#9de062] transition-colors group">
                             <div className="w-12 h-12 rounded-2xl bg-[#edf4e5] border border-[#d2e4c2] flex items-center justify-center text-[#14281c] mb-5 group-hover:bg-[#9de062] transition-colors">
                                 <Film className="w-6 h-6 text-[#244b20] group-hover:text-[#102414]" />
                             </div>
                             <h3 className="text-lg font-bold text-[#112316] mb-2">
-                                Prediksi Pendapatan Film (LightGBM)
+                                Movie Revenue Prediction (LightGBM)
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                Masukkan anggaran produksi, pilih genre yang didukung model, durasi film, dan anggaran pemasaran
-                                untuk memproyeksikan potensi pendapatan kotor bioskop secara objektif.
+                                Enter a production budget and select supported genres to estimate potential box office revenue.
                             </p>
                         </div>
 
-                        {/* Fitur 2: Ruang Kerja Periklanan */}
+                        {/* Feature 2: Advertising workspace */}
                         <div className="bg-[#f9faf7] rounded-3xl p-7 border border-[#e2e7dc] hover:border-[#9de062] transition-colors group">
                             <div className="w-12 h-12 rounded-2xl bg-[#edf4e5] border border-[#d2e4c2] flex items-center justify-center text-[#14281c] mb-5 group-hover:bg-[#9de062] transition-colors">
                                 <Tv className="w-6 h-6 text-[#244b20] group-hover:text-[#102414]" />
                             </div>
                             <h3 className="text-lg font-bold text-[#112316] mb-2">
-                                Ruang Kerja Periklanan & Belanja Media
+                                Advertising & Media Spend Workspace
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                Evaluasi performa kampanye iklan di berbagai platform, jenis kampanye, dan sektor industri.
-                                Simulasikan alokasi anggaran belanja iklan untuk mengukur potensi pengembalian modal (ROAS).
+                                Evaluate campaigns by platform, campaign type, industry, and country. Compare ad spend scenarios and review estimated return on ad spend (ROAS).
                             </p>
                         </div>
 
-                        {/* Fitur 3: Dasbor Visual & Templat */}
+                        {/* Feature 3: Visual dashboards and templates */}
                         <div className="bg-[#f9faf7] rounded-3xl p-7 border border-[#e2e7dc] hover:border-[#9de062] transition-colors group">
                             <div className="w-12 h-12 rounded-2xl bg-[#edf4e5] border border-[#d2e4c2] flex items-center justify-center text-[#14281c] mb-5 group-hover:bg-[#9de062] transition-colors">
                                 <BarChart3 className="w-6 h-6 text-[#244b20] group-hover:text-[#102414]" />
                             </div>
                             <h3 className="text-lg font-bold text-[#112316] mb-2">
-                                Dasbor Visual & Templat Siap Pakai
+                                Interactive Dashboards & Templates
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                Susun dasbor menggunakan templat bawaan (Ringkasan Eksekutif, Pembanding Genre, Bauran Saluran)
-                                dengan komponen KPI, diagram batang, diagram garis, grafik sebar, dan tabel terverifikasi.
+                                Generate a dashboard from validated historical data, with KPI cards, charts, and tables to support decision-making.
                             </p>
                         </div>
 
-                        {/* Fitur 4: Pengelolaan Dataset (CSV/XLSX) */}
+                        {/* Feature 4: Dataset management (CSV/XLSX) */}
                         <div className="bg-[#f9faf7] rounded-3xl p-7 border border-[#e2e7dc] hover:border-[#9de062] transition-colors group">
                             <div className="w-12 h-12 rounded-2xl bg-[#edf4e5] border border-[#d2e4c2] flex items-center justify-center text-[#14281c] mb-5 group-hover:bg-[#9de062] transition-colors">
                                 <FileSpreadsheet className="w-6 h-6 text-[#244b20] group-hover:text-[#102414]" />
                             </div>
                             <h3 className="text-lg font-bold text-[#112316] mb-2">
-                                Pengunggahan Dataset (CSV & XLSX)
+                                Dataset Upload (CSV & XLSX)
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                Unggah berkas data produksi film atau kampanye periklanan Anda. Sistem menyediakan pemindaian profil otomatis,
-                                saran pemetaan kolom, dan standardisasi data sebelum dianalisis.
+                                Upload movie production or advertising campaign data. The workbench profiles files, suggests column mappings, validates data, and prepares it for training and analysis.
                             </p>
                         </div>
                     </div>
@@ -527,59 +523,59 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
             </section>
 
             {/* ─────────────────────────────────────────────────────────
-                ALUR KERJA
+                WORKFLOW
             ────────────────────────────────────────────────────────── */}
             <section id="alur-kerja" className="py-20 relative">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center max-w-2xl mx-auto mb-16">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#edf4e5] px-3 py-1 rounded-full border border-[#d2e4c2] inline-block mb-3">
-                            Alur Kerja Sistem
+                            THE WORKFLOW
                         </span>
                         <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#112316]">
-                            Dari Data Mentah Menuju Keputusan yang Terverifikasi
+                            From Raw Data to Evidence-Based Decisions
                         </h2>
                         <p className="text-sm sm:text-base text-gray-500 mt-3">
-                            Tiga langkah terstruktur di dalam Ruang Kerja Studio.
+                            Three structured steps in the Studio workspace.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-                        {/* Langkah 1 */}
+                        {/* Step 1 */}
                         <div className="bg-white rounded-3xl p-8 border border-[#e2e7dc] shadow-sm relative">
                             <div className="w-10 h-10 rounded-xl bg-[#14281c] text-[#9de062] font-black text-sm flex items-center justify-center mb-6">
                                 01
                             </div>
                             <h3 className="text-lg font-bold text-[#112316] mb-2">
-                                Tentukan Parameter atau Unggah Berkas
+                                Enter Inputs or Upload a Dataset
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                Masukkan parameter proyek film (anggaran, genre, durasi) atau unggah berkas CSV/XLSX ke meja kerja data untuk dianalisis.
+                                Enter a movie production budget and select genres, or upload a CSV/XLSX dataset to the workbench.
                             </p>
                         </div>
 
-                        {/* Langkah 2 */}
+                        {/* Step 2 */}
                         <div className="bg-white rounded-3xl p-8 border border-[#e2e7dc] shadow-sm relative">
                             <div className="w-10 h-10 rounded-xl bg-[#14281c] text-[#9de062] font-black text-sm flex items-center justify-center mb-6">
                                 02
                             </div>
                             <h3 className="text-lg font-bold text-[#112316] mb-2">
-                                Jalankan Prediksi Model & Asisten AI
+                                Run a Prediction and Review Insights
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                Mesin LightGBM mengevaluasi fitur masukan terhadap data historis, menghasilkan proyeksi pendapatan dan perbandingan komparatif.
+                                LightGBM evaluates the inputs and returns a revenue estimate. Compare a budget or spend scenario to review how the model responds.
                             </p>
                         </div>
 
-                        {/* Langkah 3 */}
+                        {/* Step 3 */}
                         <div className="bg-white rounded-3xl p-8 border border-[#e2e7dc] shadow-sm relative">
                             <div className="w-10 h-10 rounded-xl bg-[#14281c] text-[#9de062] font-black text-sm flex items-center justify-center mb-6">
                                 03
                             </div>
                             <h3 className="text-lg font-bold text-[#112316] mb-2">
-                                Simpan Dasbor & Rekaman Analisis
+                                Generate and Save a Dashboard
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                                Simpan hasil analisis ke dalam pustaka dasbor pribadi lengkap dengan catatan versi model dan dataset yang valid.
+                                Build an interactive dashboard from validated data and save it with its dataset and model provenance.
                             </p>
                         </div>
                     </div>
@@ -587,7 +583,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
             </section>
 
             {/* ─────────────────────────────────────────────────────────
-                KEUNGGULAN & FONDASI ANALITIK
+                ADVANTAGES & ANALYTICS
             ────────────────────────────────────────────────────────── */}
             <section id="keunggulan" className="py-20 bg-[#14281c] text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-[#9de062]/10 blur-3xl rounded-full pointer-events-none" />
@@ -595,21 +591,20 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                         <div className="lg:col-span-5 space-y-5">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-[#9de062] bg-[#1f3a28] px-3 py-1 rounded-full border border-[#3b7335] inline-block">
-                                Fondasi Analitik
+                                ANALYTICS FOUNDATION
                             </span>
                             <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-                                Pengambilan Keputusan Berdasarkan Data Historis yang Faktual.
+                                Make Decisions with Historical Evidence.
                             </h2>
                             <p className="text-sm text-emerald-100/70 leading-relaxed">
-                                Alih-alih bersandar pada intuisi semata, SURVIVE menghadirkan landasan kuantitatif melalui model prediktif
-                                yang divalidasi dengan ribuan data riil produksi film dan performa periklanan.
+                                SURVIVE provides quantitative estimates using predictive models evaluated against historical movie and advertising data.
                             </p>
                             <div className="pt-2">
                                 <Link
                                     href={route('register')}
                                     className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-[#9de062] hover:bg-[#8fd452] text-[#102414] font-bold text-xs transition-colors shadow-sm"
                                 >
-                                    <span>Mulai Sekarang</span>
+                                    <span>Get started</span>
                                     <ArrowRight className="w-4 h-4" />
                                 </Link>
                             </div>
@@ -622,10 +617,10 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                     45.000+
                                 </div>
                                 <div className="text-sm font-bold text-white mb-2">
-                                    Data Film Historis
+                                    Historical Movie Records
                                 </div>
                                 <p className="text-xs text-emerald-100/60 leading-relaxed">
-                                    Tolok ukur industri yang komprehensif untuk membandingkan proyeksi finansial karya Anda.
+                                    Historical benchmarks to put your financial estimates in context.
                                 </p>
                             </div>
 
@@ -634,10 +629,10 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                     2 Domain
                                 </div>
                                 <div className="text-sm font-bold text-white mb-2">
-                                    Film & Periklanan
+                                    Film & Advertising
                                 </div>
                                 <p className="text-xs text-emerald-100/60 leading-relaxed">
-                                    Fleksibilitas beralih antara pemodelan film layar lebar dan simulasi kampanye periklanan digital.
+                                    Switch between movie revenue planning and advertising campaign analysis.
                                 </p>
                             </div>
                         </div>
@@ -646,44 +641,41 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
             </section>
 
             {/* ─────────────────────────────────────────────────────────
-                TANYA JAWAB (FAQ)
+                FREQUENTLY ASKED QUESTIONS (FAQ)
             ────────────────────────────────────────────────────────── */}
             <section id="faq" className="py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#edf4e5] px-3 py-1 rounded-full border border-[#d2e4c2] inline-block mb-3">
-                        Pertanyaan Umum
+                        FAQ
                     </span>
                     <h2 className="text-3xl font-extrabold tracking-tight text-[#112316]">
-                        Pertanyaan yang Sering Diajukan
+                        Frequently Asked Questions
                     </h2>
                 </div>
 
                 <div className="space-y-4">
                     <div className="bg-white rounded-2xl p-6 border border-[#e2e7dc]">
                         <h3 className="text-sm font-bold text-[#112316] mb-2">
-                            Bagaimana SURVIVE memprediksi pendapatan film dan iklan?
+                            How does SURVIVE estimate movie and advertising revenue?
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                            SURVIVE memanfaatkan model pembelajaran mesin LightGBM yang telah dilatih menggunakan data historis performa film
-                            dan kampanye periklanan. Model menganalisis kombinasi fitur masukan—seperti anggaran produksi, genre,
-                            durasi penayangan, atau alokasi belanja iklan—untuk menghitung proyeksi pendapatan secara kuantitatif.
+                            SURVIVE uses LightGBM models trained on historical movie and advertising data. The movie model uses production budget and genres; the advertising model uses campaign inputs such as platform, campaign type, industry, country, and ad spend.
                         </p>
                     </div>
 
                     <div className="bg-white rounded-2xl p-6 border border-[#e2e7dc]">
                         <h3 className="text-sm font-bold text-[#112316] mb-2">
-                            Format berkas apa saja yang didukung oleh Meja Kerja (Workbench)?
+                            Which file formats does the workbench support?
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                            Sistem mendukung berkas berformat CSV dan XLSX. Fitur pemindaian profil otomatis akan memeriksa integritas data,
-                            menyarankan pemetaan nama kolom secara cerdas, dan menstandardisasi berkas agar siap digunakan untuk analisis model.
+                            The workbench supports CSV and XLSX files. It profiles uploaded data, suggests column mappings, and validates datasets before training or dashboard analysis.
                         </p>
                     </div>
                 </div>
             </section>
 
             {/* ─────────────────────────────────────────────────────────
-                AJAKAN BERTINDAK TERAKHIR (CTA BANNER)
+                FINAL CALL TO ACTION
             ────────────────────────────────────────────────────────── */}
             <section className="py-16">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -694,10 +686,10 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                 S
                             </div>
                             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#112316] tracking-tight">
-                                Siap Mengoptimalkan Keputusan Produksi Studio Anda?
+                                Ready to Make More Informed Studio Decisions?
                             </h2>
                             <p className="text-xs sm:text-sm text-gray-500 mt-3 mb-8">
-                                Masuk ke Ruang Kerja Studio sekarang atau daftarkan akun baru Anda dalam hitungan detik.
+                                Sign in to the Studio workspace or create an account in just a few steps.
                             </p>
 
                             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -706,7 +698,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                         href={route('dashboard')}
                                         className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-bold text-xs sm:text-sm transition-colors flex items-center justify-center space-x-2"
                                     >
-                                        <span>Buka Studio</span>
+                                        <span>Open Studio</span>
                                         <ArrowRight className="w-4 h-4 text-[#9de062]" />
                                     </Link>
                                 ) : (
@@ -715,14 +707,14 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                                             href={route('register')}
                                             className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#14281c] hover:bg-[#1f3a28] text-white font-bold text-xs sm:text-sm transition-colors flex items-center justify-center space-x-2"
                                         >
-                                            <span>Daftar Akun Studio</span>
+                                            <span>Create a Studio account</span>
                                             <ArrowRight className="w-4 h-4 text-[#9de062]" />
                                         </Link>
                                         <Link
                                             href={route('login')}
                                             className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#edf4e5] hover:bg-[#e2edd4] text-[#14281c] font-bold text-xs sm:text-sm border border-[#d2e4c2] transition-colors"
                                         >
-                                            <span>Masuk ke Studio</span>
+                                            <span>Sign in to the Studio</span>
                                         </Link>
                                     </>
                                 )}
@@ -733,7 +725,7 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
             </section>
 
             {/* ─────────────────────────────────────────────────────────
-                BAGIAN KAKI (FOOTER)
+                FOOTER
             ────────────────────────────────────────────────────────── */}
             <footer className="border-t border-[#e2e7dc] bg-[#f3f4ef] py-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -747,19 +739,19 @@ export default function Welcome({ auth, canLogin = true, canRegister = true }) {
                             </span>
                             <span className="text-xs text-gray-400">|</span>
                             <span className="text-xs text-gray-500">
-                                Dukungan Keputusan Produser
+                                Decision support for producers
                             </span>
                         </div>
 
                         <div className="text-xs text-gray-500 text-center sm:text-right">
-                            <span>SURVIVE Kecerdasan Keputusan © 2026 • Hak Cipta Dilindungi</span>
+                            <span>SURVIVE Decision Intelligence © 2026 • All rights reserved</span>
                             <span className="mx-2 text-gray-300">•</span>
                             <Link href={route('login')} className="hover:text-[#14281c] transition-colors font-medium">
-                                Masuk
+                                Sign in
                             </Link>
                             <span className="mx-2 text-gray-300">•</span>
                             <Link href={route('register')} className="hover:text-[#14281c] transition-colors font-medium">
-                                Daftar
+                                Register
                             </Link>
                         </div>
                     </div>

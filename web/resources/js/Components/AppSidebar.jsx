@@ -2,13 +2,13 @@ import React from 'react';
 import AppNavbar from '@/Components/AppNavbar';
 
 /**
- * AppSidebar — Sidebar bersama untuk semua halaman SURVIVE.
+ * AppSidebar — Shared sidebar for all SURVIVE pages.
  *
  * Props:
- *  - user: { name, email }          — data user dari auth
- *  - activeKey: string              — key nav yang sedang aktif ('dashboard' | 'upload')
- *  - onNavigate(page): func         — callback untuk navigasi di dalam ScenarioDashboard (tanpa refresh)
- *                                     Jika undefined, navigasi menggunakan <Link href>
+ *  - user: { name, email }          — authenticated user data
+ *  - activeKey: string              — active navigation key ('dashboard' | 'upload')
+ *  - onNavigate(page): func         — in-app navigation callback for ScenarioDashboard (no refresh)
+ *                                     If undefined, navigation uses <Link href>
  */
 export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, domain = 'movie' }) {
     const [collapsed, setCollapsed] = useState(false);
@@ -16,7 +16,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
     const [profileOpen, setProfileOpen] = useState(false);
     const profileRef = useRef(null);
 
-    // Tutup dropdown profil jika klik di luar
+    // Close the profile dropdown when clicking outside it.
     useEffect(() => {
         function handleOutside(e) {
             if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -55,12 +55,12 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
     ];
     const legacyNavItems = [
         { ...applicationNavItems[0], href: '/scenario-lab' },
-        { ...applicationNavItems[1], key: 'upload', label: 'Unggah Berkas', href: '/upload' },
+        { ...applicationNavItems[1], key: 'upload', label: 'Upload files', href: '/upload' },
     ];
     const navItems = onNavigate ? legacyNavItems : applicationNavItems;
 
     const handleNavClick = (item) => {
-        // Jika page in-app (dashboard/upload) dan ada callback onNavigate
+        // Handle in-app navigation (dashboard/upload) when onNavigate is provided.
         if (onNavigate && (item.key === 'dashboard' || item.key === 'upload')) {
             onNavigate(item.key);
         }
@@ -91,7 +91,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
             </>
         );
 
-        // Navigasi internal (ScenarioDashboard) vs Link biasa
+        // Choose in-app navigation (ScenarioDashboard) or a regular link.
         if (onNavigate && (item.key === 'dashboard' || item.key === 'upload')) {
             return (
                 <button
@@ -188,7 +188,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
                                 <div className="text-xs font-bold text-white truncate">{user?.name ?? 'Producer Admin'}</div>
                                 <div className="text-[10px] text-gray-400 truncate">{user?.email ?? ''}</div>
                             </div>
-                            <button onClick={handleLogout} title="Keluar" className="text-rose-400 hover:text-rose-300 p-1">
+                            <button onClick={handleLogout} title="Sign out" className="text-rose-400 hover:text-rose-300 p-1">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -268,7 +268,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
 
                 {/* ─── BOTTOM: User profile dropdown ─── */}
                 <div className={`shrink-0 w-full relative ${collapsed ? 'px-2 flex flex-col items-center' : 'px-2'}`} ref={profileRef}>
-                    {/* Profile dropdown — muncul ke samping kanan jika collapsed, atau ke atas jika expanded */}
+                    {/* Profile dropdown — opens to the right when collapsed and above when expanded. */}
                     {profileOpen && (
                         <div className={`bg-[#0d1c12] border border-[#1e3827] rounded-xl overflow-hidden shadow-2xl z-50 ${
                             collapsed
@@ -300,7 +300,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
-                                    <span>Profil Saya</span>
+                                    <span>My profile</span>
                                 </Link>
                                 <button
                                     onClick={handleLogout}
@@ -310,7 +310,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                     </svg>
-                                    <span>Keluar</span>
+                                    <span>Sign out</span>
                                 </button>
                             </div>
                         </div>
@@ -320,7 +320,7 @@ export default function AppSidebar({ user, activeKey = 'dashboard', onNavigate, 
                     <div className="w-full pt-3 border-t border-[#1d3525] flex justify-center">
                         <button
                             onClick={() => setProfileOpen(!profileOpen)}
-                            title={user?.name ?? 'Profil'}
+                            title={user?.name ?? 'Profile'}
                             className={`
                                 group transition-all flex items-center
                                 ${collapsed ? 'w-10 h-10 justify-center rounded-xl hover:bg-[#1a3122]' : 'w-full space-x-2.5 justify-start px-1 py-1 rounded-xl hover:bg-[#1a3122]/50'}

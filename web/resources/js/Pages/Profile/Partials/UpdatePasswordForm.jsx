@@ -119,7 +119,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         >
                             <span className="text-xs text-[#244b20] font-medium flex items-center space-x-1 bg-[#edf4e5] px-2.5 py-1 rounded-lg border border-[#d2e4c2]">
                                 <Check className="w-3.5 h-3.5 text-[#244b20]" />
-                                <span>Kata sandi diperbarui</span>
+                                <span>Password updated</span>
                             </span>
                         </Transition>
 

@@ -27,18 +27,18 @@ export default function Register() {
 
     return (
         <GuestLayout>
-            <Head title="Daftar Akun — Survive" />
+            <Head title="Create Account — Survive" />
 
             {/* Card Header */}
             <div className="mb-6">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-[#edf4e5] px-2.5 py-0.5 rounded-full border border-[#d2e4c2] inline-block mb-2">
-                    Registrasi Baru
+                    NEW REGISTRATION
                 </span>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#112316]">
-                    Buat Akun Studio
+                    Create your Studio account
                 </h1>
                 <p className="text-xs text-gray-500 mt-1">
-                    Daftar untuk mulai memodelkan dan mengevaluasi skenario produksi.
+                    Register to start modeling and evaluating production scenarios.
                 </p>
             </div>
 
@@ -85,7 +85,7 @@ export default function Register() {
 
                 {/* Password */}
                 <div>
-                    <InputLabel htmlFor="password" value="Kata Sandi" />
+                    <InputLabel htmlFor="password" value="Password" />
                     <div className="relative">
                         <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
                         <TextInput
@@ -103,7 +103,7 @@ export default function Register() {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3.5 top-3 text-gray-400 hover:text-gray-600 focus:outline-none"
-                            aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
                         >
                             {showPassword ? (
                                 <EyeOff className="w-4 h-4" />
@@ -117,7 +117,7 @@ export default function Register() {
 
                 {/* Confirm Password */}
                 <div>
-                    <InputLabel htmlFor="password_confirmation" value="Konfirmasi Kata Sandi" />
+                    <InputLabel htmlFor="password_confirmation" value="Confirm password" />
                     <div className="relative">
                         <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" />
                         <TextInput
@@ -127,7 +127,7 @@ export default function Register() {
                             value={data.password_confirmation}
                             className="block w-full pl-10 pr-10 py-2.5"
                             autoComplete="new-password"
-                            placeholder="Ulangi kata sandi"
+                            placeholder="Re-enter your password"
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             required
                         />
@@ -135,7 +135,7 @@ export default function Register() {
                             type="button"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             className="absolute right-3.5 top-3 text-gray-400 hover:text-gray-600 focus:outline-none"
-                            aria-label={showConfirmPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                            aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                         >
                             {showConfirmPassword ? (
                                 <EyeOff className="w-4 h-4" />
@@ -154,7 +154,7 @@ export default function Register() {
                         disabled={processing}
                         className="w-full py-3 rounded-xl bg-[#14281c] hover:bg-[#1e3828] text-white font-semibold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center space-x-2 disabled:opacity-60"
                     >
-                        <span>Daftar Produser Baru</span>
+                        <span>Create producer account</span>
                         <ArrowRight className="w-4 h-4 text-[#9de062]" />
                     </button>
                 </div>
@@ -162,12 +162,12 @@ export default function Register() {
                 {/* Bottom Login Prompt */}
                 <div className="pt-4 border-t border-[#edf0ea] text-center">
                     <p className="text-xs text-gray-500">
-                        Sudah memiliki akun studio?{' '}
+                        Already have a Studio account?{' '}
                         <Link
                             href={route('login')}
                             className="font-bold text-[#14281c] hover:underline"
                         >
-                            Masuk di sini
+                            Sign in here
                         </Link>
                     </p>
                 </div>
