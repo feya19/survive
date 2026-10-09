@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select, func, text
 from sqlalchemy.orm import Session
 from .core import settings
-from .integrations.openrouter_client import OpenRouterClient
+from .ai.instructor_client import InstructorClient
 from .db import DatasetMapping, DatasetVersion, ModelVersion, ModelDeployment, now
 from .ml.genres import MultiHotGenreEncoder, canonical_genre, parse_genres
 
@@ -142,7 +142,7 @@ def suggest(columns: list[dict]) -> dict:
 
 def ai_suggest(columns: list[dict], used: set[str]) -> MappingResult:
     payload = {"columns": [{"name": c["name"], "dtype": c["dtype"]} for c in columns], "canonical_fields": {k: v for k, v in FIELDS.items() if k not in used}, "allowed_transformations": sorted(OPERATIONS)}
-    return OpenRouterClient().json_completion(payload, MappingResult)
+    return InstructorClient().json_completion(payload, MappingResult)
 
 
 def validate_mapping(mapping: dict, source_columns: list[str]) -> None:

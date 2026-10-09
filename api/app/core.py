@@ -17,8 +17,7 @@ class Settings(BaseSettings):
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     openrouter_model: str = "google/gemma-4-26b-a4b-it:free"
     openrouter_timeout_seconds: int = 45
-    openrouter_max_retries: int = 2
-    openrouter_json_mode: bool = True
+    ai_max_retries: int = 2
 
 
 @lru_cache

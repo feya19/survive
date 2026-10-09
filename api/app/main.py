@@ -18,6 +18,9 @@ from .pipeline import (
 )
 from .agent.schemas import ChatRequest, ChatResponse, MoviePredictionArguments, BudgetShockArguments
 from .agent.orchestrator import ChatOrchestrator
+from .analytics.movie_analytics import AnalyticsError, dataset_statistics, query_movie_analytics
+from .analytics.schemas import MovieAnalyticsQuery
+from .dashboards.templates import get_template, template_list
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
 app = FastAPI(title="Survive AI/ML API", version="0.1.0")
@@ -129,6 +132,64 @@ def dataset_profile(dataset_id: str, db: Session = Depends(db_session)):
 def mapping_suggest(dataset_id: str, db: Session = Depends(db_session)):
     data = dataset_profile(dataset_id, db)
     return suggest(data["columns"])
+
+
+@app.get("/api/v1/datasets/{dataset_id}/statistics", dependencies=[Depends(auth)])
+def dataset_statistics_endpoint(dataset_id: str, db: Session = Depends(db_session)):
+    try:
+        return dataset_statistics(db, dataset_id)
+    except AnalyticsError as exc:
+        raise HTTPException(exc.status_code, {"code": exc.code, "message": str(exc)})
+
+
+@app.post("/api/v1/analytics/movie/query", dependencies=[Depends(auth)])
+def movie_analytics_endpoint(body: MovieAnalyticsQuery, db: Session = Depends(db_session)):
+    try:
+        return query_movie_analytics(
+            db,
+            body.dataset_id,
+            body.operation,
+            body.genre,
+            body.budget_bucket_size,
+            body.max_points,
+        )
+    except AnalyticsError as exc:
+        raise HTTPException(exc.status_code, {"code": exc.code, "message": str(exc)})
+
+
+@app.get("/api/v1/dashboard/templates", dependencies=[Depends(auth)])
+def dashboard_templates():
+    return template_list()
+
+
+@app.get("/api/v1/dashboard/templates/{template_id}", dependencies=[Depends(auth)])
+def dashboard_template(template_id: str):
+    template = get_template(template_id)
+    if template is None:
+        raise HTTPException(404, "Dashboard template not found")
+    return template
+
+
+@app.post("/api/v1/dashboard/widgets/query", dependencies=[Depends(auth)])
+def dashboard_widget_query(body: MovieAnalyticsQuery, db: Session = Depends(db_session)):
+    return movie_analytics_endpoint(body, db)
+
+
+@app.post("/api/v1/dashboard/generate", dependencies=[Depends(auth)])
+def dashboard_generate(body: ChatRequest, db: Session = Depends(db_session)):
+    result = ChatOrchestrator().respond(db, body)
+    if result.get("dashboard_spec") is None:
+        raise HTTPException(422, {
+            "code": result.get("dashboard_error", {}).get("code", "dashboard_not_generated"),
+            "message": result["answer"],
+            "tool_execution": result.get("tool_execution"),
+            "needs_input": result.get("needs_input", False),
+        })
+    return {
+        "dashboard_spec": result["dashboard_spec"],
+        "answer": result["answer"],
+        "tool_execution": result["tool_execution"],
+    }
 
 
 class MappingInput(BaseModel):

@@ -52,9 +52,15 @@ The active model manifest determines which fields are required. Movie budgets an
 }
 ```
 
-The chat endpoint routes only to the registered `predict_movie_revenue`, `simulate_budget_shock`, and `get_active_movie_model` tools. It uses OpenRouter function calling and falls back to validated JSON routing when native tool calls are unavailable or malformed. All model-generated tool arguments are validated before execution, and numerical results come from the verified active LightGBM artifact. The response includes `tool_execution` metadata and structured results; provider or inference failures return an error without a fabricated prediction. The service executes at most three native tool calls per request. Keep `scenario_context` behind the same caller authorization checks as the movie scenario it represents.
+The chat endpoint uses Instructor in JSON mode for a validated intent/tool plan and a validated final explanation. The server allowlists `predict_movie_revenue`, `simulate_budget_shock`, and `get_active_movie_model`, then validates each tool's arguments before execution. Numerical results come from the verified active LightGBM artifact. The response includes tool execution metadata and structured results; provider or inference failures return a controlled error without a fabricated prediction. The service executes at most three tool calls per request. Keep `scenario_context` behind the same caller authorization checks as the movie scenario it represents.
 
 Direct inference is also available at `POST /api/v1/predictions/movie/revenue` with `{"budget":2000000,"genres":["Action"],"currency":"USD"}`. Budget comparison is available at `POST /api/v1/scenarios/movie/budget` with the same movie inputs plus `"budget_change_percent":-20`. `GET /api/v1/models/active/features` returns the active model's required features, supported genre vocabulary, and whether it accepts multiple genres.
+
+## Historical movie analytics
+
+Analytics read only the latest standardized version whose mapping is approved and whose validation run passed. The service verifies the stored file checksum before each query. `GET /api/v1/datasets/{dataset_id}/statistics` returns record count, revenue and budget summaries, plus revenue by genre. `POST /api/v1/analytics/movie/query` accepts one of `average_revenue_by_genre`, `revenue_by_budget_bucket`, `movie_count_by_genre`, or `budget_revenue_scatter`; it never accepts SQL. For multi-genre rows, each movie contributes once to each distinct listed genre. Results include dataset and version IDs, a result ID, declared currency when available, and sampling metadata for scatter results. If no completed training job declared USD for that version, monetary values are returned without a currency label.
+
+Chat analytics also require `dataset_id` in the server-authorized request context. Laravel must derive this ID from a dataset belonging to the signed-in user's production; the model cannot select or override the dataset.
 
 Newly trained notebook artifacts support genre arrays and store their vocabulary in the manifest. Existing scalar-genre artifacts remain supported; they continue to accept one genre until a multi-genre compatible candidate is trained and explicitly promoted. Chat validates genre names against whichever model is active.
 
@@ -62,7 +68,7 @@ Newly trained notebook artifacts support genre arrays and store their vocabulary
 
 Run `docker compose exec fastapi-api python -m pytest -q` for unit tests. For the full two-version scenario, run `docker compose exec fastapi-api python scripts/e2e_demo.py`; the default API URL points to the same container and the token defaults to the example token. Set `API_URL` and `SERVICE_TOKEN` when using different values. The demo generates CSV and XLSX data, uploads both, trains with Papermill, promotes, predicts, and rolls back.
 
-OpenRouter calls require a valid key. Without one, known aliases and manual mapping work. The default model is `google/gemma-4-26b-a4b-it:free`; no paid fallback is used. Live provider availability and rate limits depend on OpenRouter.
+OpenRouter calls require a valid key. Without one, known aliases and manual mapping work. The default model is `google/gemma-4-26b-a4b-it:free`; no paid fallback is used. `OPENROUTER_TIMEOUT_SECONDS` sets the provider timeout and `AI_MAX_RETRIES` bounds Instructor schema repair attempts. Live provider availability and rate limits depend on OpenRouter.
 
 ## Notebook adapter
 
@@ -70,4 +76,4 @@ The registered model is a real `lightgbm.LGBMRegressor` with its preprocessing p
 
 ## Current limits
 
-This MVP uses a single film revenue adapter. Its metrics are holdout MAE and RMSE; no business threshold is configured for promotion. Uploaded data and fitted artifacts must be treated as trusted within this internal service boundary. Use a strong service token and restrict network access to the API.
+This MVP uses a single film revenue adapter. Chat prediction, budget comparison, and active model information are available; historical analytics and generated dashboards are later implementation phases. Its metrics are holdout MAE and RMSE; no business threshold is configured for promotion. Uploaded data and fitted artifacts must be treated as trusted within this internal service boundary. Use a strong service token and restrict network access to the API.

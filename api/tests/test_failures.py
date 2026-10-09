@@ -1,14 +1,17 @@
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
-import httpx
+import json
 import pandas as pd
 import pytest
+import httpx
+from openai import OpenAI as RealOpenAI
 from fastapi.testclient import TestClient
 from app.main import app
 from app.core import settings
 from app.pipeline import suggest, validate_mapping, standardize, trusted, verify_model
-from app.integrations.openrouter_client import OpenRouterClient
+from app.ai.instructor_client import InstructorClient
+from app.agent.schemas import ChatExplanation
 from app.pipeline import MappingResult
 
 
@@ -53,40 +56,73 @@ def test_standardization_rejects_negative_financial_values(tmp_path):
         standardize(source, mapping, tmp_path / "out.csv")
 
 
-def test_openrouter_rate_limit_retries():
-    from openai import RateLimitError
-    response = httpx.Response(429, headers={"Retry-After": "0"}, request=httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions"))
-    error = RateLimitError("limited", response=response, body=None)
-    valid = SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{"mappings":[],"unmapped_columns":[],"warnings":[]}'))])
-    with patch("app.integrations.openrouter_client.OpenAI") as sdk, patch("app.integrations.openrouter_client.time.sleep"):
-        sdk.return_value.chat.completions.create.side_effect = [error, valid]
-        result = OpenRouterClient().json_completion({}, MappingResult)
-    assert result.mappings == []
-    assert sdk.return_value.chat.completions.create.call_count == 2
+def test_structured_client_uses_instructor_json_and_bounded_retries():
+    calls = []
 
+    class FakeCompletions:
+        def create(self, **kwargs):
+            calls.append(kwargs)
+            return {"mappings": [], "unmapped_columns": ["Mystery"], "warnings": []}
 
-def test_openrouter_malformed_json():
-    invalid = SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="not json"))])
-    with patch("app.integrations.openrouter_client.OpenAI") as sdk:
-        sdk.return_value.chat.completions.create.return_value = invalid
-        with pytest.raises(Exception):
-            OpenRouterClient().json_completion({}, MappingResult)
-        assert sdk.return_value.chat.completions.create.call_count == 2
+    fake = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
+    with patch("app.ai.instructor_client.OpenAI") as sdk, patch("app.ai.instructor_client.instructor.from_openai", return_value=fake) as wrap:
+        client = InstructorClient()
+        result = client.json_completion({}, MappingResult)
 
-
-def test_openrouter_repairs_invalid_json_response():
-    invalid = SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{"suggestions": []}'))])
-    valid = SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{"mappings": [], "unmapped_columns": ["Mystery"], "warnings": []}'))])
-    with patch("app.integrations.openrouter_client.OpenAI") as sdk:
-        sdk.return_value.chat.completions.create.side_effect = [invalid, valid]
-        result = OpenRouterClient().json_completion({}, MappingResult)
-
+    import instructor
     assert result.unmapped_columns == ["Mystery"]
-    assert sdk.return_value.chat.completions.create.call_count == 2
-    first_messages = sdk.return_value.chat.completions.create.call_args_list[0].kwargs["messages"]
-    retry_messages = sdk.return_value.chat.completions.create.call_args_list[1].kwargs["messages"]
-    assert "unmapped_columns" in first_messages[0]["content"]
-    assert "Validation errors" in retry_messages[-1]["content"]
+    assert wrap.call_args.kwargs["mode"] is instructor.Mode.JSON
+    assert sdk.call_args.kwargs["max_retries"] == 0
+    assert calls[0]["response_model"] is MappingResult
+    assert calls[0]["max_retries"] == 2
+
+
+def test_structured_client_revalidates_injected_response():
+    fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=lambda **_kwargs: {
+        "mappings": [], "unmapped_columns": ["Mystery"], "warnings": [],
+    })))
+    with patch("app.ai.instructor_client.OpenAI"), patch("app.ai.instructor_client.instructor.from_openai", return_value=fake):
+        result = InstructorClient().json_completion({}, MappingResult)
+    assert isinstance(result, MappingResult)
+
+
+def test_instructor_json_mode_repairs_invalid_output_with_mocked_provider():
+    contents = iter(['{"answer":', '{"answer":"Validated answer"}'])
+    requests = []
+    http_clients = []
+
+    def handler(request):
+        requests.append(json.loads(request.content))
+        content = next(contents)
+        response = {
+            "id": "chatcmpl-test", "object": "chat.completion", "created": 1, "model": "fixture",
+            "choices": [{"index": 0, "message": {"role": "assistant", "content": content}, "finish_reason": "stop"}],
+            "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+        }
+        return httpx.Response(200, json=response, request=request)
+
+    def openai_factory(**kwargs):
+        http_client = httpx.Client(transport=httpx.MockTransport(handler))
+        http_clients.append(http_client)
+        return RealOpenAI(**kwargs, http_client=http_client)
+
+    cfg = SimpleNamespace(
+        openrouter_api_key="test-key", openrouter_base_url="https://openrouter.test/v1",
+        openrouter_timeout_seconds=3, openrouter_model="fixture-model", ai_max_retries=1,
+    )
+    try:
+        with patch("app.ai.instructor_client.settings", return_value=cfg), patch("app.ai.instructor_client.OpenAI", side_effect=openai_factory):
+            result = InstructorClient().generate_structured(
+                [{"role": "user", "content": "Return an answer."}], ChatExplanation
+            )
+    finally:
+        for http_client in http_clients:
+            http_client.close()
+
+    assert result.answer == "Validated answer"
+    assert len(requests) == 2
+    assert requests[0]["response_format"] == {"type": "json_object"}
+    assert requests[0]["model"] == "fixture-model"
 
 
 def test_missing_and_corrupt_model_artifact(tmp_path):
