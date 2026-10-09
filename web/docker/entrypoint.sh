@@ -7,7 +7,7 @@ if [ -z "${APP_KEY:-}" ]; then
 fi
 
 database_path="${DB_DATABASE:-/var/www/html/database/database.sqlite}"
-upload_limit="${ML_API_MAX_UPLOAD_MB:-20}"
+upload_limit="${ML_API_MAX_UPLOAD_MB:-200}"
 case "$upload_limit" in
     ''|*[!0-9]*)
         echo "ML_API_MAX_UPLOAD_MB must be a positive integer." >&2
@@ -27,7 +27,9 @@ mkdir -p "$(dirname "$database_path")" \
     /var/www/html/storage/framework/views \
     /var/www/html/storage/logs \
     /var/www/html/bootstrap/cache
-touch "$database_path"
+if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ] && [ "$database_path" != ":memory:" ]; then
+    touch "$database_path"
+fi
 chown -R www-data:www-data /var/lib/laravel /var/www/html/storage /var/www/html/bootstrap/cache
 
 php artisan package:discover --ansi >/dev/null

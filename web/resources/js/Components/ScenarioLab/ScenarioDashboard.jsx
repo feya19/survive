@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import FileUploadView from './FileUploadView';
-import { Link, router } from '@inertiajs/react';
-import AppSidebar from '@/Components/AppSidebar';
+import AppNavbar from '@/Components/AppNavbar';
 import { Calendar, TrendingUp, AlertTriangle, Sparkles, Check, DollarSign } from 'lucide-react';
 
 export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
     // Current Active Page in Sidebar ('dashboard' | 'upload')
     const [currentPage, setCurrentPage] = useState(initialPage);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Active Scenario in Dashboard
     const [activeScenario, setActiveScenario] = useState('crew-cost');
@@ -283,61 +281,44 @@ export default function ScenarioDashboard({ user, initialPage = 'dashboard' }) {
         setAddedMitigations((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const handleSelectPage = (page) => {
-        setCurrentPage(page);
-        setMobileMenuOpen(false);
-    };
-
     return (
-        <div className="h-screen bg-[#f3f4ef] text-[#1c1f1d] flex flex-col md:flex-row font-sans antialiased selection:bg-[#c2e78c] selection:text-[#102414] overflow-hidden">
-            <AppSidebar
+        <div className="h-screen bg-[#f3f4ef] text-[#1c1f1d] flex flex-col font-sans antialiased selection:bg-[#c2e78c] selection:text-[#102414] overflow-hidden">
+            <AppNavbar
                 user={user}
-                activeKey={currentPage === 'upload' ? 'upload' : 'dashboard'}
-                onNavigate={(page) => { setCurrentPage(page); }}
-            />
-
-            {/* Main Content Area — scrollable */}
-            <main className="flex-1 overflow-y-auto h-screen">
-                {/* Top Nav Header */}
-                <header className="h-16 px-4 sm:px-8 border-b border-[#e2e5dc] flex items-center justify-between bg-[#f3f4ef]/80 backdrop-blur sticky top-0 z-20">
-                    {/* Brand Badge */}
-                    <div className="flex items-center space-x-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-[#9de062] flex items-center justify-center text-[#102414] font-bold text-sm shadow-xs shrink-0">
-                            S
+                title="Scenario lab"
+                activeKey="scenario-lab"
+                actions={
+                    <div className="flex items-center space-x-2">
+                        <div className="hidden lg:flex items-center space-x-2 text-xs text-emerald-200/80 font-medium mr-1">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Live preview</span>
                         </div>
-                        <span className="font-extrabold text-sm sm:text-base tracking-wider uppercase text-[#112316]">
-                            SURVIVE
-                        </span>
-                    </div>
-
-                    <div className="flex items-center space-x-2 sm:space-x-4">
-                        <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-600 font-medium">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span>Saved 2 min ago</span>
-                        </div>
-
                         <button
+                            type="button"
                             onClick={() => setCurrentPage(currentPage === 'dashboard' ? 'upload' : 'dashboard')}
-                            className="px-3 py-1.5 rounded-lg border border-[#d2d7cb] bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 flex items-center space-x-1.5 shadow-2xs transition-all"
+                            className="px-2.5 py-1.5 rounded-lg border border-emerald-100/30 bg-white/10 hover:bg-white/20 text-xs font-semibold text-emerald-100 flex items-center space-x-1.5 transition"
                         >
-                            <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                             <span>{currentPage === 'dashboard' ? 'Upload Data' : 'View Lab'}</span>
                         </button>
-
                         <button
+                            type="button"
                             onClick={() => setCurrentPage('upload')}
-                            className="px-3 py-1.5 rounded-lg bg-[#14281c] hover:bg-[#1e3828] text-white text-xs font-semibold flex items-center space-x-1 shadow-sm transition-all"
+                            className="px-2.5 py-1.5 rounded-lg bg-[#9de062] hover:bg-lime-200 text-[#102414] text-xs font-bold flex items-center space-x-1 transition shadow-xs"
                         >
                             <span>+</span>
                             <span className="hidden sm:inline">New scenario</span>
                             <span className="sm:hidden">New</span>
                         </button>
                     </div>
-                </header>
+                }
+            />
 
-                <div className="px-4 sm:px-8 py-6 max-w-7xl mx-auto space-y-6">
+            {/* Main Content Area — scrollable */}
+            <main className="flex-1 overflow-y-auto">
+                <div className="w-full space-y-6 px-6 py-6 sm:px-8 lg:px-10">
                     {/* Render Page Based on Sidebar Selection */}
                     {currentPage === 'upload' ? (
                         <FileUploadView onSwitchToDashboard={() => setCurrentPage('dashboard')} />

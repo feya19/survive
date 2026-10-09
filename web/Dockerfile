@@ -1,12 +1,14 @@
-FROM node:22-alpine AS assets
+FROM node:22-slim AS assets
 WORKDIR /build
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
-RUN npm ci && npm run build
+RUN npm run build
 
 FROM php:8.3-apache AS php-base
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libzip-dev unzip \
-    && docker-php-ext-install zip \
+    && apt-get install -y --no-install-recommends libzip-dev unzip libpq-dev \
+    && docker-php-ext-install zip pdo_pgsql \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 RUN a2enmod rewrite headers
@@ -31,7 +33,8 @@ WORKDIR /var/www/html
 COPY --from=app-build /var/www/html /var/www/html
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/entrypoint.sh /usr/local/bin/laravel-entrypoint
-RUN chmod +x /usr/local/bin/laravel-entrypoint \
+RUN sed -i 's/\r$//' /usr/local/bin/laravel-entrypoint \
+    && chmod +x /usr/local/bin/laravel-entrypoint \
     && mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions \
        storage/framework/views storage/logs bootstrap/cache /var/lib/laravel \
     && chown -R www-data:www-data storage bootstrap/cache /var/lib/laravel

@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     storage_root: Path = Path("/data")
     service_token: str = ""
     cors_origins: str = ""
-    max_upload_mb: int = 20
+    max_upload_mb: int = 200
     profile_rows: int = 10000
     ai_provider: str = "openrouter"
     openrouter_api_key: str = ""

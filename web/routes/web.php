@@ -18,7 +18,9 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [MovieDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/scenario-lab', [MovieDashboardController::class, 'index'])->name('scenario-lab');
+    Route::get('/scenario-lab', function () {
+        return Inertia::render('ScenarioDashboard');
+    })->name('scenario-lab');
     Route::get('/workbench', [WorkbenchController::class, 'index'])->name('workbench');
     Route::get('/upload', [WorkbenchController::class, 'index'])->name('upload');
     Route::post('/movie/predictions', [MovieDashboardController::class, 'predict']);
